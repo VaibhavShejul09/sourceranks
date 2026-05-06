@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import LandingPage from "./pages/LandingPage";
 import Home from "./pages/Home";
+import Onboarding from "./pages/Onboarding";
 import SubmissionHistory from "./pages/SubmissionHistory";
 import SubmissionDetail from "./pages/SubmissionDetail";
 import QuizList from "./pages/quiz/QuizList";
@@ -30,6 +31,7 @@ function App() {
 
         <Route element={<UserShell />}>
           <Route path="/home" element={<Home />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/problems" element={<ProblemList />} />
           <Route path="/submissions" element={<SubmissionHistory />} />

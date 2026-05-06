@@ -10,4 +10,5 @@ public class UserProfileResponse {
     private String userId;
     private String role;
     private String displayName;
+    private boolean onboardingCompleted;
 }

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";
-import { getMyProfile } from "../services/userApi";
+import DashboardChecklist from "../components/DashboardChecklist";
+import RecommendedActionCard from "../components/RecommendedActionCard";
+import { getMyDashboardSummary, getMyProfile } from "../services/userApi";
 import { getMyResults } from "../services/resultApi";
 import { getMyRecentSubmissions } from "../services/submissionApi";
 import { logoutUser } from "../services/authService";
@@ -40,6 +42,7 @@ export default function Home() {
   const navigate = useNavigate();
   const shellContext = useOutletContext();
   const [profile, setProfile] = useState(null);
+  const [summary, setSummary] = useState(null);
   const [results, setResults] = useState([]);
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,13 +57,20 @@ export default function Home() {
 
     const loadDashboard = async () => {
       try {
-        const [profileData, resultsResponse, submissionData] = await Promise.all([
+        const [profileData, summaryData, resultsResponse, submissionData] = await Promise.all([
           getMyProfile(),
+          getMyDashboardSummary(),
           getMyResults(),
           getMyRecentSubmissions(),
         ]);
 
+        if (!summaryData?.onboardingCompleted) {
+          navigate("/onboarding", { replace: true });
+          return;
+        }
+
         setProfile(profileData);
+        setSummary(summaryData);
         setResults(Array.isArray(resultsResponse.data) ? resultsResponse.data : []);
         setSubmissions(Array.isArray(submissionData) ? submissionData : []);
       } catch (err) {
@@ -87,6 +97,14 @@ export default function Home() {
     );
   }
 
+  const checklistOverrides = {
+    "complete-profile": Boolean(summary?.onboardingCompleted),
+    "solve-first-problem": submissions.length > 0,
+    "attempt-first-quiz": results.length > 0,
+    "review-first-result": results.length > 0,
+    "join-study-path": Boolean(summary?.preferredTrack),
+  };
+
   return (
     <div className="app-container space-y-8">
       <div className="grid gap-8 xl:grid-cols-[1.15fr_0.85fr]">
@@ -101,6 +119,23 @@ export default function Home() {
             Track coding and quiz progress from one place and jump back into
             practice with a clear view of your recent work.
           </p>
+          <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-300">
+            {summary?.goal ? (
+              <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1">
+                Goal: {summary.goal}
+              </span>
+            ) : null}
+            {summary?.preferredTrack ? (
+              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1">
+                Track: {summary.preferredTrack}
+              </span>
+            ) : null}
+            {summary?.skillLevel ? (
+              <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1">
+                Level: {summary.skillLevel}
+              </span>
+            ) : null}
+          </div>
           {error ? (
             <p className="mt-4 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-amber-200">
               {error}
@@ -145,9 +180,9 @@ export default function Home() {
             <h2 className="section-title">Workspace status</h2>
             <div className="mt-5 space-y-3">
               {[
-                "Dashboard, profile, settings, billing, and support are now reachable from the main shell.",
-                "Logout is available from both the sidebar and the profile menu.",
-                "Core quiz and coding flows stay intact while the dashboard structure feels more SaaS-like.",
+                "Onboarding preferences now personalize your first recommended action.",
+                "Dashboard, profile, settings, billing, and support stay reachable from the main shell.",
+                "Core quiz and coding flows remain intact while activation becomes more product-guided.",
               ].map((item) => (
                 <div key={item} className="surface-card-soft">
                   <p className="text-sm leading-6 text-slate-300">{item}</p>
@@ -157,6 +192,8 @@ export default function Home() {
           </div>
         </aside>
       </div>
+
+      <RecommendedActionCard action={summary?.recommendedFirstAction} />
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
@@ -174,6 +211,11 @@ export default function Home() {
             <p className="mt-2 text-2xl font-semibold">{submissions.length}</p>
         </div>
       </section>
+
+      <DashboardChecklist
+        items={summary?.checklist || []}
+        overrides={checklistOverrides}
+      />
 
       <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {practiceCards.map((card) => (
