@@ -13,4 +13,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export const extractApiData = (response) => response.data;
+
 export default api;

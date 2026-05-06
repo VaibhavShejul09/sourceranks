@@ -44,7 +44,7 @@ This repository is being brought to a production-grade Phase 1 baseline with a g
 
 - Phase 1: completed
 - Coding platform: Phase 1 complete
-- Quiz platform: Phase 1 complete
+- Quiz platform: Phase 1 complete and aligned with the coding platform baseline
 - Platform security baseline: Phase 1 complete
 - Documentation baseline: complete
 
@@ -54,7 +54,7 @@ This repository is being brought to a production-grade Phase 1 baseline with a g
 - correct ownership enforcement
 - stable coding and quiz user flows
 - stable admin content management flows
-- structured logging and exception handling direction
+- structured logging and exception handling baseline
 - clean system documentation
 
 ## Documentation Map

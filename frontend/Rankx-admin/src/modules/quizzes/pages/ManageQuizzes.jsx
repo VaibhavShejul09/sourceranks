@@ -92,6 +92,26 @@ const ManageQuizzes = () => {
     }
   };
 
+  const handleSingleStatusToggle = async (quiz) => {
+    try {
+      const publish = quiz.status !== "PUBLISHED";
+      await bulkPublish([quiz.id], publish);
+
+      setQuizzes((prev) =>
+        prev.map((currentQuiz) =>
+          currentQuiz.id === quiz.id
+            ? {
+                ...currentQuiz,
+                status: publish ? "PUBLISHED" : "DRAFT",
+              }
+            : currentQuiz
+        )
+      );
+    } catch (err) {
+      console.error("Failed to toggle quiz status", err);
+    }
+  };
+
   /* ================= RENDER ================= */
 
   return (
@@ -177,7 +197,7 @@ const ManageQuizzes = () => {
                   navigate(`/quizzes/${q.id}/questions`)
                 }
                 onToggleStatus={() =>
-                  handleBulkPublish(q.status !== "PUBLISHED")
+                  handleSingleStatusToggle(q)
                 }
               />
             ))}

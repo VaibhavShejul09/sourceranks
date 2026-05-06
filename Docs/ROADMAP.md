@@ -26,11 +26,14 @@ Phase 1 has been completed across the entire platform. The next direction is Pha
 - attempt security tightening
 - result ownership tightening
 - quiz answer correctness fix
+- quiz review/detail parity improvements
+- quiz admin status toggle fix
 
 ### Coding batch
 - testcase-to-problem binding fix
 - submission identity hardening
 - custom input execution path
+- submission history and detail baseline
 
 ## Next Recommended Work After This Pass
 

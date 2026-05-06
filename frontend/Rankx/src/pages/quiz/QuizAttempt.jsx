@@ -20,10 +20,12 @@ const shuffleArray = (arr) => {
 const optionLabels = ["A", "B", "C", "D"];
 
 const normalizeOptions = (options = []) =>
-  shuffleArray(options).map((text, index) => ({
-    key: optionLabels[index],
-    text
-  }));
+  shuffleArray(
+    options.map((text, index) => ({
+      key: optionLabels[index],
+      text
+    }))
+  );
 
 const QuizAttempt = () => {
   const { quizId } = useParams();
@@ -38,6 +40,8 @@ const QuizAttempt = () => {
   const [timeLeft, setTimeLeft] = useState(15 * 60);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [savingQuestionId, setSavingQuestionId] = useState(null);
 
   /* ---- Modals ---- */
   const [showConfirm, setShowConfirm] = useState(false);
@@ -62,7 +66,7 @@ const QuizAttempt = () => {
 
         setQuestions(normalized);
       } catch (err) {
-        setError("Failed to load quiz");
+        setError("We could not load this quiz attempt.");
       } finally {
         setLoading(false);
       }
@@ -113,7 +117,7 @@ const QuizAttempt = () => {
 
   const handleOptionSelect = async (option) => {
     const question = questions[current];
-    if (!attemptId || !question) return;
+    if (!attemptId || !question || savingQuestionId === question.id || submitting) return;
 
     setAnswers(prev => ({
       ...prev,
@@ -121,12 +125,16 @@ const QuizAttempt = () => {
     }));
 
     try {
+      setSavingQuestionId(question.id);
       await saveAnswer(attemptId, {
         questionId: question.id,
         selectedOption: option.key
       });
     } catch (err) {
       console.error("Save answer failed", err);
+      setError("We could not save your answer. Please try again.");
+    } finally {
+      setSavingQuestionId(null);
     }
   };
 
@@ -140,10 +148,14 @@ const QuizAttempt = () => {
 
   const handleFinalSubmit = async () => {
     try {
+      setSubmitting(true);
       await submitAttempt(attemptId);
       navigate(`/quiz/result?attemptId=${attemptId}`);
-    } catch {
-      alert("Failed to submit quiz");
+    } catch (err) {
+      console.error("Failed to submit quiz", err);
+      setError("We could not submit your quiz. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -158,7 +170,7 @@ const QuizAttempt = () => {
       </div>
     );
 
-  if (error)
+  if (error && !questions.length)
     return (
       <div className="min-h-screen bg-[#020617] flex items-center justify-center text-red-400">
         {error}
@@ -220,9 +232,10 @@ const QuizAttempt = () => {
               </button>
               <button
                 onClick={handleFinalSubmit}
-                className="px-6 py-2 bg-red-600 rounded-xl"
+                disabled={submitting}
+                className="px-6 py-2 bg-red-600 rounded-xl disabled:opacity-60"
               >
-                Submit Anyway
+                {submitting ? "Submitting..." : "Submit Anyway"}
               </button>
             </div>
           </div>
@@ -231,6 +244,11 @@ const QuizAttempt = () => {
 
       {/* -------- MAIN CARD -------- */}
       <div className="max-w-4xl mx-auto bg-[#0f172a]/90 rounded-3xl p-6 shadow-2xl">
+        {error && (
+          <div className="mb-4 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+            {error}
+          </div>
+        )}
 
         {/* -------- LEGEND -------- */}
         <div className="flex justify-center gap-4 text-xs text-gray-300 mb-4">
@@ -297,12 +315,13 @@ const QuizAttempt = () => {
             <button
               key={`${question.id}-${opt.key}-${opt.text}`}
               onClick={() => handleOptionSelect(opt)}
+              disabled={savingQuestionId === question.id || submitting}
               className={`w-full p-4 rounded-xl flex gap-4 transition
                 ${
                   selected === opt.text
                     ? "bg-indigo-600"
                     : "bg-[#020617] hover:bg-indigo-700"
-                }`}
+                } disabled:cursor-not-allowed disabled:opacity-70`}
             >
               <div className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center font-bold">
                 {opt.key || optionLabels[idx]}
@@ -344,9 +363,10 @@ const QuizAttempt = () => {
                     ? setShowConfirm(true)
                     : handleFinalSubmit()
                 }
-                className="px-6 py-2 bg-green-600 rounded-xl font-semibold"
+                disabled={submitting}
+                className="px-6 py-2 bg-green-600 rounded-xl font-semibold disabled:opacity-60"
               >
-                Submit
+                {submitting ? "Submitting..." : "Submit"}
               </button>
             ) : (
               <button

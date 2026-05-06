@@ -13,6 +13,7 @@
 - stable admin flows
 - gateway-first security model in practice
 - ownership enforcement on user-scoped data
+- coding and quiz tracks aligned at the same production MVP baseline
 - documentation restored and structured
 - critical bugs closed
 
@@ -30,12 +31,15 @@
 #### Batch 3
 - quiz hardening
 - attempt, result, and quiz correctness fixes
+- quiz history and review baseline
+- quiz admin status-toggle correction
 
 #### Batch 4
 - coding hardening
 - testcase-to-problem persistence fix
 - submission identity fix
 - custom input run support
+- coding history and detail baseline
 
 ### Verification completed
 - backend service test baseline restored with in-memory test contexts where required

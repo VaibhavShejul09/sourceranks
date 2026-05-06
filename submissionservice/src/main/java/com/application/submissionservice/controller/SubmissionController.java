@@ -4,6 +4,7 @@ import com.application.submissionservice.dto.*;
 import com.application.submissionservice.service.SubmissionService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -36,6 +37,21 @@ public class SubmissionController {
             @RequestHeader("X-User-Id") Long userId
     ) {
         return service.submit(request, userId);
+    }
+
+    @GetMapping("/me")
+    public List<SubmissionSummaryResponse> getMyRecentSubmissions(
+            @RequestHeader("X-User-Id") Long userId
+    ) {
+        return service.getSubmissionHistory(userId);
+    }
+
+    @GetMapping("/{submissionId}")
+    public SubmissionDetailResponse getSubmissionDetail(
+            @PathVariable Long submissionId,
+            @RequestHeader("X-User-Id") Long userId
+    ) {
+        return service.getSubmissionDetail(submissionId, userId);
     }
 }
 

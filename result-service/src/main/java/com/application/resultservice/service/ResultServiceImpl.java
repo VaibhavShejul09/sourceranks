@@ -5,18 +5,26 @@ import com.application.resultservice.client.QuestionServiceClient;
 import com.application.resultservice.dto.AttemptDetails;
 import com.application.resultservice.dto.QuestionAnswerDTO;
 import com.application.resultservice.dto.ResultResponse;
+import com.application.resultservice.dto.ResultReviewResponse;
 import com.application.resultservice.entity.Result;
 import com.application.resultservice.repository.ResultRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.UUID;
+
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ResultServiceImpl implements ResultService {
 
     private final ResultRepository resultRepository;
@@ -32,7 +40,7 @@ public class ResultServiceImpl implements ResultService {
 
         AttemptDetails attempt = attemptClient.getAttemptDetails(attemptId);
         if (!attempt.getUserId().equals(userId)) {
-            throw new SecurityException("Unauthorized result evaluation");
+            throw new ResponseStatusException(FORBIDDEN, "Unauthorized result evaluation");
         }
 
         List<QuestionAnswerDTO> correctAnswers =
@@ -59,6 +67,7 @@ public class ResultServiceImpl implements ResultService {
                 .build();
 
         resultRepository.save(result);
+        log.info("Evaluated result for attempt {} and user {}", attemptId, userId);
         return mapToResponse(result);
     }
 
@@ -67,7 +76,7 @@ public class ResultServiceImpl implements ResultService {
         return resultRepository.findByAttemptId(attemptId)
                 .map(result -> {
                     if (!result.getUserId().equals(userId)) {
-                        throw new SecurityException("Unauthorized result access");
+                        throw new ResponseStatusException(FORBIDDEN, "Unauthorized result access");
                     }
                     return mapToResponse(result);
                 })
@@ -80,6 +89,52 @@ public class ResultServiceImpl implements ResultService {
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
+    }
+
+    @Override
+    public ResultReviewResponse getResultReview(UUID attemptId, UUID userId) {
+        ResultResponse result = getResultByAttempt(attemptId, userId);
+        AttemptDetails attempt = attemptClient.getAttemptDetails(attemptId);
+
+        if (!attempt.getUserId().equals(userId)) {
+            throw new ResponseStatusException(FORBIDDEN, "Unauthorized review access");
+        }
+
+        List<QuestionAnswerDTO> correctAnswers =
+                questionClient.getCorrectAnswers(attempt.getQuizId());
+
+        Map<UUID, String> selectedAnswers = attempt.getAnswers();
+        AtomicInteger questionCounter = new AtomicInteger(1);
+
+        List<ResultReviewResponse.QuestionReview> reviews = correctAnswers.stream()
+                .map(answer -> {
+                    String selectedOption = selectedAnswers.get(answer.getQuestionId());
+                    String correctOption = answer.getCorrectOption();
+                    return ResultReviewResponse.QuestionReview.builder()
+                            .questionId(answer.getQuestionId())
+                            .questionNumber(questionCounter.getAndIncrement())
+                            .selectedOption(selectedOption)
+                            .correctOption(correctOption)
+                            .correct(correctOption.equals(selectedOption))
+                            .build();
+                })
+                .toList();
+        int correctCount = (int) reviews.stream().filter(ResultReviewResponse.QuestionReview::correct).count();
+        int unansweredCount = (int) reviews.stream()
+                .filter(question -> question.selectedOption() == null)
+                .count();
+
+        return ResultReviewResponse.builder()
+                .attemptId(result.getAttemptId())
+                .quizId(result.getQuizId())
+                .score(result.getScore())
+                .totalQuestions(result.getTotalQuestions())
+                .percentage(result.getPercentage())
+                .correctAnswers(correctCount)
+                .incorrectAnswers(reviews.size() - correctCount - unansweredCount)
+                .unansweredQuestions(unansweredCount)
+                .questions(reviews)
+                .build();
     }
 
     private ResultResponse mapToResponse(Result r) {

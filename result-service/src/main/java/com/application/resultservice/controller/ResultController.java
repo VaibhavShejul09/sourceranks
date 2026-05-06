@@ -1,6 +1,7 @@
 package com.application.resultservice.controller;
 
 import com.application.resultservice.dto.ResultResponse;
+import com.application.resultservice.dto.ResultReviewResponse;
 import com.application.resultservice.service.ResultService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,16 @@ public class ResultController {
     ) {
         UUID userId = (UUID) authentication.getPrincipal();
         return ResponseEntity.ok(resultService.getResultByAttempt(attemptId, userId));
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/{attemptId}/review")
+    public ResponseEntity<ResultReviewResponse> getReview(
+            @PathVariable UUID attemptId,
+            Authentication authentication
+    ) {
+        UUID userId = (UUID) authentication.getPrincipal();
+        return ResponseEntity.ok(resultService.getResultReview(attemptId, userId));
     }
 
     @PreAuthorize("hasRole('USER')")

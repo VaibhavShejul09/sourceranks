@@ -27,9 +27,8 @@ Bring the coding product to a production MVP baseline.
 - strengthen submission ownership handling
 - improve coding workspace behavior
 
-## Remaining Phase 1 Verification Areas
+## Phase 1 Alignment Status
 
-- security config consistency
-- submission history and detail completeness
-- broader backend tests
-- admin problem authoring completeness
+- coding history and detail flows define the current Phase 1 parity target
+- quiz platform is aligned to the same user-history and detail baseline
+- both tracks now share the same production MVP expectation before deeper Phase 2 work

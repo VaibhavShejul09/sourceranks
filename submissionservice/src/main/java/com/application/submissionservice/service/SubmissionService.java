@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -156,7 +157,58 @@ public class SubmissionService {
                 .build();
     }
 
+    public List<SubmissionSummaryResponse> getRecentSubmissions(Long userId) {
+        return repository.findTop5ByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(this::toSummaryResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<SubmissionSummaryResponse> getSubmissionHistory(Long userId) {
+        return repository.findByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(this::toSummaryResponse)
+                .collect(Collectors.toList());
+    }
+
+    public SubmissionDetailResponse getSubmissionDetail(Long submissionId, Long userId) {
+        Submission submission = repository.findByIdAndUserId(submissionId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("Submission not found"));
+
+        return toDetailResponse(submission);
+    }
+
+    public long countSubmissions(Long userId) {
+        return repository.countByUserId(userId);
+    }
+
     // ================= Helpers =================
+
+    private SubmissionSummaryResponse toSummaryResponse(Submission submission) {
+        return SubmissionSummaryResponse.builder()
+                .id(submission.getId())
+                .problemId(submission.getProblemId())
+                .languageKey(submission.getLanguageKey())
+                .status(submission.getStatus())
+                .runtimeMs(submission.getRuntimeMs())
+                .memoryKb(submission.getMemoryKb())
+                .createdAt(submission.getCreatedAt())
+                .build();
+    }
+
+    private SubmissionDetailResponse toDetailResponse(Submission submission) {
+        return SubmissionDetailResponse.builder()
+                .id(submission.getId())
+                .userId(submission.getUserId())
+                .problemId(submission.getProblemId())
+                .languageKey(submission.getLanguageKey())
+                .sourceCode(submission.getSourceCode())
+                .status(submission.getStatus())
+                .runtimeMs(submission.getRuntimeMs())
+                .memoryKb(submission.getMemoryKb())
+                .createdAt(submission.getCreatedAt())
+                .build();
+    }
 
     private void validateSourceCode(String sourceCode) {
         if (sourceCode == null || sourceCode.isBlank()) {

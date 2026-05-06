@@ -25,9 +25,10 @@ Bring the quiz product to a production MVP baseline with correct scoring, secure
 - fix shuffled answer correctness
 - fix publish and status logic
 - improve admin management stability
+- align quiz history and review depth with the coding platform
 
-## Remaining Phase 1 Verification Areas
+## Phase 1 Alignment Status
 
-- broader quiz service tests
-- richer admin validation
-- frontend result history completeness
+- quiz user flow is aligned with coding user history/detail coverage
+- quiz review supports owned-attempt drilldown and summary metrics
+- quiz admin management has stable publish and toggle flows
