@@ -8,3 +8,8 @@ export const registerApi = (data) =>
 
 export const verifyOtpApi = (data) =>
   api.post("/auth/verify-otp", data);
+
+export const logoutUser = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+};

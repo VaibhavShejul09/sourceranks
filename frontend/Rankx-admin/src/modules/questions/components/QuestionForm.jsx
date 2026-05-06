@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const OPTION_KEYS = ["A", "B", "C", "D"];
 
@@ -11,10 +11,8 @@ const QuestionForm = ({ initialData = null, onSubmit, submitting = false }) => {
     optionD: "",
     correctOption: "",
   });
-
   const [error, setError] = useState("");
 
-  // ✅ Accept ONLY flat data
   useEffect(() => {
     if (!initialData) return;
 
@@ -53,59 +51,79 @@ const QuestionForm = ({ initialData = null, onSubmit, submitting = false }) => {
   };
 
   return (
-    <div className="bg-gray-900 p-6 rounded-xl space-y-4">
-      {/* QUESTION */}
+    <div className="surface-card space-y-6">
       <div>
-        <label className="font-semibold">Question</label>
+        <label htmlFor="question-text" className="field-label">
+          Question
+        </label>
         <textarea
+          id="question-text"
           name="questionText"
           value={form.questionText}
           onChange={handleChange}
-          className="w-full mt-1 p-3 bg-gray-800 rounded-lg"
-          rows={3}
+          className="input-base min-h-32 resize-y"
+          rows={4}
         />
       </div>
 
-      {/* OPTIONS */}
-      {OPTION_KEYS.map((key) => (
-        <div key={key}>
-          <label className="font-semibold">Option {key}</label>
-          <input
-            name={`option${key}`}
-            value={form[`option${key}`]}
-            onChange={handleChange}
-            className="w-full mt-1 p-3 bg-gray-800 rounded-lg"
-          />
-        </div>
-      ))}
+      <div className="grid gap-4 md:grid-cols-2">
+        {OPTION_KEYS.map((key) => (
+          <div key={key}>
+            <label htmlFor={`option-${key}`} className="field-label">
+              Option {key}
+            </label>
+            <input
+              id={`option-${key}`}
+              name={`option${key}`}
+              value={form[`option${key}`]}
+              onChange={handleChange}
+              className="input-base"
+            />
+          </div>
+        ))}
+      </div>
 
-      {/* CORRECT OPTION */}
-      <div>
-        <label className="font-semibold block mb-1">Correct Option</label>
-        <div className="flex gap-4">
+      <fieldset>
+        <legend className="field-label">Correct option</legend>
+        <div className="grid gap-3 sm:grid-cols-4">
           {OPTION_KEYS.map((key) => (
-            <label key={key} className="flex items-center gap-2">
+            <label
+              key={key}
+              className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
+                form.correctOption === key
+                  ? "border-sky-300/25 bg-sky-400/10 text-white"
+                  : "border-white/8 bg-white/[0.03] text-slate-300 hover:border-white/12"
+              }`}
+            >
               <input
                 type="radio"
                 name="correctOption"
                 value={key}
                 checked={form.correctOption === key}
                 onChange={handleChange}
+                className="h-4 w-4 border-white/15 bg-slate-900 text-sky-400 focus:ring-sky-400"
               />
-              {key}
+              <span>{key}</span>
             </label>
           ))}
         </div>
-      </div>
+      </fieldset>
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error ? (
+        <div
+          role="alert"
+          className="rounded-2xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+        >
+          {error}
+        </div>
+      ) : null}
 
       <button
         onClick={handleSubmit}
         disabled={submitting}
-        className="w-full bg-gradient-to-r from-green-500 to-emerald-600 py-3 rounded-xl font-semibold disabled:opacity-50"
+        className="btn-primary w-full"
       >
-        {submitting ? "Saving..." : "Save Question"}
+        {submitting ? "Saving..." : "Save question"}
       </button>
     </div>
   );

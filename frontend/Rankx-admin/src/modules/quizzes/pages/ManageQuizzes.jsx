@@ -2,26 +2,17 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaPlusCircle } from "react-icons/fa";
-
 import QuizFilters from "../components/QuizFilters";
 import QuizRow from "../components/QuizRow";
 import BulkActionBar from "../components/BulkActionBar";
-
-import {
-  getQuizzes,
-  bulkPublish,
-  bulkDelete,
-} from "../services/quizApi";
+import { bulkDelete, bulkPublish, getQuizzes } from "../services/quizApi";
 
 const ManageQuizzes = () => {
   const navigate = useNavigate();
-
   const [quizzes, setQuizzes] = useState([]);
   const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState({ status: "", search: "" });
   const [loading, setLoading] = useState(false);
-
-  /* ================= LOAD QUIZZES ================= */
 
   useEffect(() => {
     loadQuizzes();
@@ -33,39 +24,34 @@ const ManageQuizzes = () => {
       const data = await getQuizzes();
       setQuizzes(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("❌ Failed to load quizzes", err);
+      console.error("Failed to load quizzes", err);
       setQuizzes([]);
     } finally {
       setLoading(false);
     }
   };
 
-  /* ================= FILTERING ================= */
-
-  const filteredQuizzes = quizzes.filter((q) => {
-    if (filters.status && q.status !== filters.status) return false;
+  const filteredQuizzes = quizzes.filter((quiz) => {
+    if (filters.status && quiz.status !== filters.status) return false;
     if (
       filters.search &&
-      !q.title.toLowerCase().includes(filters.search.toLowerCase())
-    )
+      !quiz.title.toLowerCase().includes(filters.search.toLowerCase())
+    ) {
       return false;
+    }
+
     return true;
   });
-
-  /* ================= BULK ACTIONS ================= */
 
   const handleBulkDelete = async () => {
     if (!selected.length) return;
 
     try {
       await bulkDelete(selected);
-
-      setQuizzes((prev) =>
-        prev.filter((quiz) => !selected.includes(quiz.id))
-      );
+      setQuizzes((prev) => prev.filter((quiz) => !selected.includes(quiz.id)));
       setSelected([]);
     } catch (err) {
-      console.error("❌ Bulk delete failed", err);
+      console.error("Bulk delete failed", err);
     }
   };
 
@@ -74,21 +60,16 @@ const ManageQuizzes = () => {
 
     try {
       await bulkPublish(selected, publish);
-
       setQuizzes((prev) =>
         prev.map((quiz) =>
           selected.includes(quiz.id)
-            ? {
-                ...quiz,
-                status: publish ? "PUBLISHED" : "DRAFT",
-              }
+            ? { ...quiz, status: publish ? "PUBLISHED" : "DRAFT" }
             : quiz
         )
       );
-
       setSelected([]);
     } catch (err) {
-      console.error("❌ Bulk publish/unpublish failed", err);
+      console.error("Bulk publish/unpublish failed", err);
     }
   };
 
@@ -100,10 +81,7 @@ const ManageQuizzes = () => {
       setQuizzes((prev) =>
         prev.map((currentQuiz) =>
           currentQuiz.id === quiz.id
-            ? {
-                ...currentQuiz,
-                status: publish ? "PUBLISHED" : "DRAFT",
-              }
+            ? { ...currentQuiz, status: publish ? "PUBLISHED" : "DRAFT" }
             : currentQuiz
         )
       );
@@ -112,97 +90,108 @@ const ManageQuizzes = () => {
     }
   };
 
-  /* ================= RENDER ================= */
-
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white px-8 py-10">
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight">
-            Manage Quizzes
-          </h1>
-          <p className="text-gray-400 mt-2">
-            Create, publish, and manage all quizzes from one place
-          </p>
-        </div>
+    <div className="admin-shell">
+      <div className="admin-container space-y-6">
+        <header className="page-header">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="eyebrow">Quiz Operations</p>
+              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                Manage quizzes
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
+                Create, publish, and organize quizzes from a cleaner control surface
+                with more consistent filtering, actions, and responsive behavior.
+              </p>
+            </div>
 
-        <button
-          onClick={() => navigate("/quizzes/create")}
-          className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3 rounded-xl font-semibold shadow-lg hover:scale-[1.02] transition"
-        >
-          <FaPlusCircle className="text-lg" />
-          Create Quiz
-        </button>
-      </div>
+            <button
+              onClick={() => navigate("/quizzes/create")}
+              className="btn-primary"
+            >
+              <FaPlusCircle className="text-sm" />
+              Create quiz
+            </button>
+          </div>
+        </header>
 
-      {/* STATS */}
-      <div className="mb-8">
-        <motion.div
-          whileHover={{ scale: 1.03 }}
-          className="bg-gradient-to-r from-gray-800 to-gray-900 p-6 rounded-xl shadow-md max-w-sm"
-        >
-          <p className="text-gray-400 text-sm">Total Quizzes</p>
-          <p className="text-3xl font-bold mt-2">
-            {filteredQuizzes.length}
-          </p>
-        </motion.div>
-      </div>
+        <section className="grid gap-4 md:grid-cols-3">
+          <motion.div whileHover={{ y: -2 }} className="stat-card">
+            <p className="text-sm text-slate-400">Visible quizzes</p>
+            <p className="mt-3 text-3xl font-semibold text-white">{filteredQuizzes.length}</p>
+          </motion.div>
+          <motion.div whileHover={{ y: -2 }} className="stat-card">
+            <p className="text-sm text-slate-400">Published</p>
+            <p className="mt-3 text-3xl font-semibold text-white">
+              {quizzes.filter((quiz) => quiz.status === "PUBLISHED").length}
+            </p>
+          </motion.div>
+          <motion.div whileHover={{ y: -2 }} className="stat-card">
+            <p className="text-sm text-slate-400">Drafts</p>
+            <p className="mt-3 text-3xl font-semibold text-white">
+              {quizzes.filter((quiz) => quiz.status === "DRAFT").length}
+            </p>
+          </motion.div>
+        </section>
 
-      {/* FILTERS */}
-      <div className="mb-6">
-        <QuizFilters filters={filters} onChange={setFilters} />
-      </div>
-
-      {/* BULK ACTION BAR */}
-      <BulkActionBar
-        count={selected.length}
-        onPublish={() => handleBulkPublish(true)}
-        onUnpublish={() => handleBulkPublish(false)}
-        onDelete={handleBulkDelete}
-      />
-
-      {/* QUIZ LIST */}
-      <div className="mt-6">
-        {loading ? (
-          <p className="text-gray-400">Loading quizzes...</p>
-        ) : filteredQuizzes.length === 0 ? (
-          <div className="text-center text-gray-400 py-16">
-            <p className="text-lg font-medium">No quizzes found</p>
-            <p className="text-sm mt-1">
-              Create your first quiz to get started
+        <section className="surface-card space-y-5">
+          <div>
+            <h2 className="section-title">Catalog</h2>
+            <p className="section-copy mt-1 text-sm">
+              Filter the quiz list, review status, and perform batch actions.
             </p>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredQuizzes.map((q) => (
-              <QuizRow
-                key={q.id}
-                quiz={q}
-                selected={selected.includes(q.id)}
-                onSelect={() =>
-                  setSelected((prev) =>
-                    prev.includes(q.id)
-                      ? prev.filter((id) => id !== q.id)
-                      : [...prev, q.id]
-                  )
-                }
-                onView={() =>
-                  navigate(`/quizzes/${q.id}/preview`)
-                }
-                onEdit={() =>
-                  navigate(`/quizzes/${q.id}/edit`)
-                }
-                onQuestions={() =>
-                  navigate(`/quizzes/${q.id}/questions`)
-                }
-                onToggleStatus={() =>
-                  handleSingleStatusToggle(q)
-                }
-              />
-            ))}
-          </div>
-        )}
+
+          <QuizFilters filters={filters} onChange={setFilters} />
+
+          <BulkActionBar
+            count={selected.length}
+            onPublish={() => handleBulkPublish(true)}
+            onUnpublish={() => handleBulkPublish(false)}
+            onDelete={handleBulkDelete}
+          />
+
+          {loading ? (
+            <div className="grid gap-4">
+              {[...Array(5)].map((_, idx) => (
+                <div key={idx} className="surface-card-soft animate-pulse">
+                  <div className="h-5 w-1/3 rounded-full bg-white/8" />
+                  <div className="mt-4 h-4 w-3/4 rounded-full bg-white/8" />
+                  <div className="mt-6 h-10 rounded-2xl bg-white/8" />
+                </div>
+              ))}
+            </div>
+          ) : filteredQuizzes.length === 0 ? (
+            <div className="empty-state">
+              <p className="text-base font-medium text-white">No quizzes found</p>
+              <p className="mt-2 text-sm text-slate-400">
+                Adjust the filters or create a new quiz to get started.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredQuizzes.map((quiz) => (
+                <QuizRow
+                  key={quiz.id}
+                  quiz={quiz}
+                  selected={selected.includes(quiz.id)}
+                  onSelect={() =>
+                    setSelected((prev) =>
+                      prev.includes(quiz.id)
+                        ? prev.filter((id) => id !== quiz.id)
+                        : [...prev, quiz.id]
+                    )
+                  }
+                  onView={() => navigate(`/quizzes/${quiz.id}/preview`)}
+                  onEdit={() => navigate(`/quizzes/${quiz.id}/edit`)}
+                  onQuestions={() => navigate(`/quizzes/${quiz.id}/questions`)}
+                  onToggleStatus={() => handleSingleStatusToggle(quiz)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

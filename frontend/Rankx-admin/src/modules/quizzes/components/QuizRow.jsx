@@ -1,16 +1,13 @@
 import { motion } from "framer-motion";
-import {
-  FaEdit,
-  FaEye,
-  FaListUl,
-  FaToggleOn,
-  FaToggleOff,
-} from "react-icons/fa";
+import { FaEdit, FaEye, FaListUl, FaToggleOff, FaToggleOn } from "react-icons/fa";
 
 const statusStyles = {
-  PUBLISHED: "bg-green-500/10 text-green-400 border-green-500/30",
-  DRAFT: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30",
+  PUBLISHED: "badge-success",
+  DRAFT: "badge-warning",
 };
+
+const actionButtonClass =
+  "inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/8 bg-white/[0.04] text-slate-300 transition hover:border-white/12 hover:bg-white/[0.08] hover:text-white";
 
 const QuizRow = ({
   quiz,
@@ -24,104 +21,82 @@ const QuizRow = ({
   const isPublished = quiz.status === "PUBLISHED";
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.01 }}
-      className={`flex items-center justify-between gap-6 p-5 rounded-xl border 
-        ${
-          selected
-            ? "border-emerald-500/40 bg-emerald-500/5"
-            : "border-gray-800 bg-gray-900"
-        }
-      `}
+    <motion.article
+      whileHover={{ y: -2 }}
+      className={`rounded-[24px] border p-5 shadow-[0_16px_40px_rgba(2,8,23,0.18)] transition ${
+        selected
+          ? "border-sky-300/25 bg-sky-400/8"
+          : "border-white/8 bg-slate-950/55"
+      }`}
     >
-      {/* LEFT */}
-      <div className="flex items-start gap-4 flex-1">
-        <input
-          type="checkbox"
-          checked={selected}
-          onChange={onSelect}
-          className="mt-1 accent-emerald-500"
-        />
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+        <div className="flex flex-1 items-start gap-4">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={onSelect}
+            aria-label={`Select ${quiz.title}`}
+            className="mt-1 h-4 w-4 rounded border-white/15 bg-slate-900 text-sky-400 focus:ring-sky-400"
+          />
 
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-white">
-            {quiz.title}
-          </h3>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-white">{quiz.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-400">
+                  {quiz.description || "No description provided."}
+                </p>
+              </div>
+              <span className={statusStyles[quiz.status] || "badge-neutral"}>
+                {quiz.status}
+              </span>
+            </div>
 
-          <p className="text-sm text-gray-400 line-clamp-1 mt-1">
-            {quiz.description}
-          </p>
-
-          <div className="flex items-center gap-4 mt-3 text-sm">
-            {/* STATUS */}
-            <span
-              className={`px-3 py-1 rounded-full border text-xs font-semibold
-                ${statusStyles[quiz.status] || "border-gray-600 text-gray-400"}
-              `}
-            >
-              {quiz.status}
-            </span>
-
-            {/* DURATION */}
-            <span className="text-gray-500">
-              ⏱ {quiz.durationMinutes} min
-            </span>
+            <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-400">
+              <span className="badge-neutral">{quiz.durationMinutes} minutes</span>
+              <span className="badge-neutral">Quiz ID #{quiz.id}</span>
+            </div>
           </div>
         </div>
+
+        <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+          <button onClick={onView} className={actionButtonClass} title="Preview quiz">
+            <FaEye />
+          </button>
+
+          <button
+            onClick={onEdit}
+            disabled={isPublished}
+            className={`${actionButtonClass} ${
+              isPublished ? "cursor-not-allowed opacity-45 hover:bg-white/[0.04] hover:text-slate-300" : ""
+            }`}
+            title={isPublished ? "Cannot edit a published quiz" : "Edit quiz"}
+          >
+            <FaEdit />
+          </button>
+
+          <button
+            onClick={onQuestions}
+            className={actionButtonClass}
+            title="Manage questions"
+          >
+            <FaListUl />
+          </button>
+
+          <button
+            onClick={onToggleStatus}
+            className={actionButtonClass}
+            title={isPublished ? "Unpublish quiz" : "Publish quiz"}
+          >
+            {isPublished ? (
+              <FaToggleOn className="text-emerald-300" />
+            ) : (
+              <FaToggleOff className="text-slate-400" />
+            )}
+          </button>
+        </div>
       </div>
-
-      {/* RIGHT ACTIONS */}
-      <div className="flex items-center gap-3">
-        {/* PREVIEW */}
-        <button
-          onClick={onView}
-          className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition"
-          title="Preview Quiz"
-        >
-          <FaEye />
-        </button>
-
-        {/* EDIT */}
-        <button
-          onClick={onEdit}
-          disabled={isPublished}
-          className={`p-2 rounded-lg transition ${
-            isPublished
-              ? "bg-gray-700 cursor-not-allowed opacity-50"
-              : "bg-gray-800 hover:bg-gray-700"
-          }`}
-          title={
-            isPublished
-              ? "Cannot edit a published quiz"
-              : "Edit Quiz"
-          }
-        >
-          <FaEdit />
-        </button>
-
-        {/* QUESTIONS */}
-        <button
-          onClick={onQuestions}
-          className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition"
-          title="Manage Questions"
-        >
-          <FaListUl />
-        </button>
-
-        {/* TOGGLE STATUS */}
-        <button
-          onClick={onToggleStatus}
-          className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition"
-          title={isPublished ? "Unpublish Quiz" : "Publish Quiz"}
-        >
-          {isPublished ? (
-            <FaToggleOn className="text-green-400" />
-          ) : (
-            <FaToggleOff className="text-gray-400" />
-          )}
-        </button>
-      </div>
-    </motion.div>
+    </motion.article>
   );
 };
 

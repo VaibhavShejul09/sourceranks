@@ -1,280 +1,165 @@
-import React from "react";
 import { motion } from "framer-motion";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 32 },
   visible: { opacity: 1, y: 0 },
 };
 
 const stagger = {
   visible: {
-    transition: { staggerChildren: 0.12 },
+    transition: { staggerChildren: 0.1 },
   },
 };
 
 export default function LandingPage() {
   return (
-    <div className="bg-[#020617] text-white overflow-x-hidden">
-
-      {/* ================= NAVBAR ================= */}
-      <nav className="sticky top-0 z-50 backdrop-blur bg-[#020617]/70 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-extrabold bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
-              DevLearn
+    <div className="overflow-x-hidden bg-[#060d18] text-white">
+      <nav className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            <span className="rounded-full border border-teal-300/20 bg-teal-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-teal-200">
+              RankX
             </span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
-              Beta
+            <span className="hidden text-sm text-slate-400 sm:inline">
+              Practice, assess, and improve with confidence
             </span>
           </div>
 
-          <div className="hidden md:flex gap-8 text-sm text-slate-300">
-            <a href="#courses" className="hover:text-white">Courses</a>
-            <a href="#labs" className="hover:text-white">Labs</a>
-            <a href="#dsa" className="hover:text-white">DSA</a>
-            <a href="#paths" className="hover:text-white">Paths</a>
+          <div className="hidden items-center gap-8 text-sm text-slate-300 md:flex">
+            <a href="#features" className="hover:text-white">
+              Features
+            </a>
+            <a href="#practice" className="hover:text-white">
+              Practice
+            </a>
+            <a href="#paths" className="hover:text-white">
+              Paths
+            </a>
           </div>
 
-          <button className="bg-gradient-to-r from-green-400 to-blue-500 text-black px-5 py-2 rounded-xl font-semibold hover:opacity-90 transition">
-            Get Started
-          </button>
+          <button className="btn-primary">Get started</button>
         </div>
       </nav>
 
-      {/* ================= HERO ================= */}
-      <section className="relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-blue-500/10 to-purple-500/10 blur-3xl" />
-
+      <section className="relative px-5 py-20 sm:px-6 sm:py-28">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(94,234,212,0.18),_transparent_28%),radial-gradient(circle_at_85%_10%,_rgba(124,156,255,0.12),_transparent_22%)]" />
         <motion.div
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          transition={{ duration: 0.8 }}
-          className="relative max-w-7xl mx-auto px-6 py-28 grid md:grid-cols-2 gap-14 items-center"
+          transition={{ duration: 0.75 }}
+          className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center"
         >
-          {/* Left */}
           <div>
-            <h1 className="text-5xl md:text-6xl font-extrabold leading-tight">
-              Learn <span className="bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">DSA</span>,  
-              <br />
-              Master <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">DevOps</span>
+            <div className="badge-neutral">Modern interview prep workspace</div>
+            <h1 className="mt-6 max-w-4xl text-5xl font-semibold tracking-tight text-white sm:text-6xl">
+              Sharper practice for coding rounds, quizzes, and daily skill growth.
             </h1>
-
-            <p className="mt-6 text-lg text-slate-300 max-w-xl">
-              A complete learning platform with video courses, LeetCode-style DSA problems, and
-              real Docker & Kubernetes labs — inspired by KodeKloud.
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+              RankX combines problem solving, quiz practice, and submission review
+              into one focused environment that feels fast, premium, and built for
+              repeat use.
             </p>
 
-            <div className="mt-10 flex gap-4">
-              <button className="bg-gradient-to-r from-green-400 to-blue-500 text-black px-8 py-4 rounded-2xl font-bold hover:scale-[1.05] transition">
-                Start Learning Free
-              </button>
-              <button className="border border-slate-700 px-8 py-4 rounded-2xl text-slate-300 hover:bg-slate-900">
-                Try a Lab
-              </button>
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+              <button className="btn-primary px-6 py-3.5">Start practicing free</button>
+              <button className="btn-secondary px-6 py-3.5">Explore features</button>
             </div>
 
-            <div className="mt-8 flex gap-6 text-sm text-slate-400">
-              <span>✔ No setup required</span>
-              <span>✔ Real environments</span>
-              <span>✔ Career focused</span>
+            <div className="mt-8 flex flex-wrap gap-6 text-sm text-slate-400">
+              <span>Structured problem practice</span>
+              <span>Quiz assessments</span>
+              <span>Progress visibility</span>
             </div>
           </div>
 
-          {/* Right – Terminal */}
           <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="bg-black/70 border border-slate-800 rounded-3xl p-6 shadow-2xl"
+            whileHover={{ y: -4 }}
+            className="surface-card overflow-hidden rounded-[32px] p-0"
           >
-            <pre className="text-green-400 text-sm leading-relaxed font-mono">
-$ docker build -t backend-app .{"\n"}
-$ docker run -d backend-app{"\n"}
-$ kubectl apply -f deployment.yaml{"\n"}
-✔ Pod running successfully
-            </pre>
+            <div className="border-b border-white/10 px-5 py-4">
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-rose-400/80" />
+                <span className="h-3 w-3 rounded-full bg-amber-400/80" />
+                <span className="h-3 w-3 rounded-full bg-emerald-400/80" />
+              </div>
+            </div>
+            <div className="grid gap-4 p-5 sm:grid-cols-2">
+              <div className="surface-card-soft">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">This week</p>
+                <p className="mt-3 text-3xl font-semibold text-white">24</p>
+                <p className="mt-2 text-sm text-slate-400">Problems attempted</p>
+              </div>
+              <div className="surface-card-soft">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Accuracy</p>
+                <p className="mt-3 text-3xl font-semibold text-white">89%</p>
+                <p className="mt-2 text-sm text-slate-400">Across recent quizzes</p>
+              </div>
+              <div className="surface-card-soft sm:col-span-2">
+                <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-[13px] leading-6 text-emerald-300">
+{`$ rankx practice arrays
+Session started
+Running sample tests...
+Passed 6/6 sample cases
+Ready to submit`}
+                </pre>
+              </div>
+            </div>
           </motion.div>
         </motion.div>
       </section>
 
-      {/* ================= STATS ================= */}
-      <section className="border-y border-slate-800 bg-[#020617]">
-        <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
+      <section id="features" className="border-y border-white/10 bg-slate-950/50 px-5 py-16 sm:px-6">
+        <div className="mx-auto grid max-w-7xl gap-6 md:grid-cols-3">
           {[
-            ["500+", "DSA Problems"],
-            ["120+", "Docker & K8s Labs"],
-            ["60+", "Video Courses"],
-            ["Job Ready", "Learning Paths"],
-          ].map(([value, label]) => (
-            <div key={label}>
-              <div className="text-4xl font-extrabold bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
-                {value}
-              </div>
-              <div className="text-slate-400 mt-2">{label}</div>
+            ["Focused dashboard", "See coding and quiz progress together in one clean view."],
+            ["LeetCode-style workspace", "Read, code, run, and submit without leaving context."],
+            ["Admin-friendly operations", "Manage quizzes and content with consistent workflows."],
+          ].map(([title, copy]) => (
+            <div key={title} className="surface-card">
+              <h2 className="text-xl font-semibold text-white">{title}</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-400">{copy}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ================= LEARNING FLOW ================= */}
-      <section className="max-w-7xl mx-auto px-6 py-28">
-        <h2 className="text-4xl font-extrabold text-center mb-16">
-          Learn → Practice → Apply → Master
+      <section id="practice" className="mx-auto max-w-7xl px-5 py-20 sm:px-6">
+        <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+          Practice loops designed for momentum
         </h2>
-
         <motion.div
           variants={stagger}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid md:grid-cols-4 gap-8"
-        >
-          {["Video Courses", "Hands-on Labs", "DSA Practice", "Career Readiness"].map(step => (
-            <motion.div
-              key={step}
-              variants={fadeUp}
-              whileHover={{ y: -8 }}
-              className="bg-white/5 border border-slate-800 rounded-2xl p-6 text-center"
-            >
-              <h3 className="font-semibold">{step}</h3>
-            </motion.div>
-          ))}
-        </motion.div>
-      </section>
-
-      {/* ================= COURSES ================= */}
-      {/* (UNCHANGED CONTENT – only animation added) */}
-      <section id="courses" className="max-w-7xl mx-auto px-6 py-24">
-        <h2 className="text-4xl font-extrabold mb-12">
-          🎥 Structured Video Courses
-        </h2>
-
-        <motion.div
-          variants={stagger}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid md:grid-cols-3 gap-8"
+          className="mt-10 grid gap-6 md:grid-cols-3"
         >
           {[
-            "DSA for Beginners",
-            "Advanced DSA Patterns",
-            "Docker Zero to Hero",
-            "Kubernetes for Developers",
-            "Backend Engineering",
-            "System Design Basics",
-          ].map(course => (
-            <motion.div
-              key={course}
-              variants={fadeUp}
-              whileHover={{ y: -8 }}
-              className="bg-white/5 backdrop-blur border border-slate-800 rounded-3xl p-6 hover:border-green-400 transition"
-            >
-              <h3 className="text-lg font-semibold">{course}</h3>
-              <p className="text-slate-400 text-sm mt-2">
-                Video • Practice • Quizzes
-              </p>
-              <button className="mt-5 text-green-400 font-medium hover:underline">
-                View Course →
-              </button>
+            "Daily coding sets",
+            "Timed quiz sessions",
+            "Submission review and iteration",
+          ].map((item) => (
+            <motion.div key={item} variants={fadeUp} className="surface-card">
+              <p className="badge-neutral">Workflow</p>
+              <h3 className="mt-4 text-xl font-semibold text-white">{item}</h3>
             </motion.div>
           ))}
         </motion.div>
       </section>
 
-      {/* ================= DSA GRID ================= */}
-      <section id="dsa" className="max-w-7xl mx-auto px-6 py-28">
-        <h2 className="text-4xl font-extrabold mb-12">
-          🧩 DSA Problem Categories
-        </h2>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {["Arrays", "Strings", "Linked List", "Stack", "Queue", "Tree", "Graph", "Dynamic Programming"].map(topic => (
-            <div
-              key={topic}
-              className="bg-white/5 border border-slate-800 rounded-xl p-5 hover:border-green-400 transition"
-            >
-              {topic}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ================= LABS (UNCHANGED CONTENT) ================= */}
-      <section id="labs" className="bg-gradient-to-br from-blue-950 to-slate-950 border-y border-slate-800">
-        <div className="max-w-7xl mx-auto px-6 py-24">
-          <h2 className="text-4xl font-extrabold mb-4">
-            🧪 Hands-On Docker & Kubernetes Labs
+      <section id="paths" className="border-t border-white/10 px-5 py-20 sm:px-6">
+        <div className="mx-auto max-w-7xl rounded-[32px] border border-white/10 bg-slate-950/60 px-6 py-10 shadow-[0_24px_60px_rgba(2,8,23,0.4)] sm:px-10">
+          <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            A calmer, more trustworthy way to learn by doing
           </h2>
-          <p className="text-slate-400 max-w-2xl mb-12">
-            Practice in real cloud environments with guided steps and auto-validation —
-            just like KodeKloud.
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400 sm:text-base">
+            RankX keeps the flows simple while making the experience feel more
+            polished, responsive, and production-ready across devices.
           </p>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              "Build Docker Images",
-              "Container Networking",
-              "Deploy Kubernetes Pods",
-              "Services & Load Balancing",
-              "ConfigMaps & Secrets",
-              "Scaling & Rollouts",
-            ].map(lab => (
-              <div
-                key={lab}
-                className="bg-black/50 backdrop-blur border border-slate-800 rounded-3xl p-6 hover:border-blue-400 transition"
-              >
-                <h3 className="font-semibold">{lab}</h3>
-                <p className="text-slate-400 text-sm mt-2">
-                  Real Terminal · Guided · Auto-Check
-                </p>
-              </div>
-            ))}
-          </div>
+          <button className="btn-primary mt-8 px-6 py-3.5">Create free account</button>
         </div>
       </section>
-
-      {/* ================= PATHS ================= */}
-      <section id="paths" className="max-w-7xl mx-auto px-6 py-28">
-        <h2 className="text-4xl font-extrabold mb-12">
-          🚀 Career Learning Paths
-        </h2>
-
-        <div className="grid md:grid-cols-2 gap-10">
-          {["Backend Engineer Path", "DevOps Engineer Path"].map(path => (
-            <div
-              key={path}
-              className="bg-white/5 border border-slate-800 rounded-3xl p-8"
-            >
-              <h3 className="text-xl font-semibold">{path}</h3>
-              <p className="text-slate-400 mt-2">
-                Courses → Labs → DSA → Assessments
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ================= CTA ================= */}
-      <section className="max-w-7xl mx-auto px-6 py-28 text-center">
-        <h2 className="text-5xl font-extrabold">
-          Become a <span className="text-green-400">Job-Ready Engineer</span>
-        </h2>
-        <p className="text-slate-400 mt-6 text-lg max-w-2xl mx-auto">
-          Learn DSA, Backend, Docker & Kubernetes — all in one focused platform.
-        </p>
-
-        <button className="mt-10 bg-gradient-to-r from-green-400 to-blue-500 text-black px-10 py-5 rounded-2xl font-bold text-lg hover:scale-[1.05] transition">
-          Create Free Account
-        </button>
-      </section>
-
-      {/* ================= FOOTER ================= */}
-      <footer className="border-t border-slate-800 bg-[#020617]">
-        <div className="max-w-7xl mx-auto px-6 py-10 text-slate-500 text-sm flex flex-col md:flex-row justify-between gap-4">
-          <span>© 2026 DevLearn</span>
-          <span>Privacy · Terms · Contact</span>
-        </div>
-      </footer>
     </div>
   );
 }

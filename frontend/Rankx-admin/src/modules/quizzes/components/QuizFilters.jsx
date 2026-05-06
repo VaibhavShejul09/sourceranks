@@ -1,25 +1,35 @@
 const QuizFilters = ({ filters, onChange }) => {
   return (
-    <div className="flex flex-col md:flex-row gap-4 mb-6">
-      {/* Search */}
-      <input
-        type="text"
-        value={filters.search || ""}
-        onChange={(e) => onChange({ ...filters, search: e.target.value })}
-        placeholder="Search quizzes..."
-        className="flex-1 px-4 py-3 rounded-xl bg-gray-800 text-white border border-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-      />
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
+      <div>
+        <label htmlFor="quiz-search" className="sr-only">
+          Search quizzes
+        </label>
+        <input
+          id="quiz-search"
+          type="search"
+          value={filters.search || ""}
+          onChange={(e) => onChange({ ...filters, search: e.target.value })}
+          placeholder="Search quizzes..."
+          className="input-base"
+        />
+      </div>
 
-      {/* Status Filter */}
-      <select
-        value={filters.status || ""}
-        onChange={(e) => onChange({ ...filters, status: e.target.value })}
-        className="px-4 py-3 rounded-xl bg-gray-800 text-white border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-      >
-        <option value="">All Status</option>
-        <option value="published">Published</option>
-        <option value="draft">Draft</option>
-      </select>
+      <div>
+        <label htmlFor="quiz-status" className="sr-only">
+          Filter by status
+        </label>
+        <select
+          id="quiz-status"
+          value={filters.status || ""}
+          onChange={(e) => onChange({ ...filters, status: e.target.value })}
+          className="input-base"
+        >
+          <option value="">All status</option>
+          <option value="PUBLISHED">Published</option>
+          <option value="DRAFT">Draft</option>
+        </select>
+      </div>
     </div>
   );
 };

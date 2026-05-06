@@ -1,16 +1,23 @@
-const BulkActionBar = ({ count, onPublish, onDelete }) => {
+const BulkActionBar = ({ count, onPublish, onUnpublish, onDelete }) => {
   if (!count) return null;
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex gap-4">
-      <span className="text-slate-400">{count} selected</span>
+    <div className="surface-card-soft flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <span className="text-sm text-slate-300">
+        {count} quiz{count === 1 ? "" : "zes"} selected
+      </span>
 
-      <button className="btn-success" onClick={onPublish}>
-        Publish
-      </button>
-      <button className="btn-danger" onClick={onDelete}>
-        Delete
-      </button>
+      <div className="flex flex-wrap gap-2">
+        <button className="btn-success" onClick={onPublish}>
+          Publish
+        </button>
+        <button className="btn-secondary" onClick={onUnpublish}>
+          Unpublish
+        </button>
+        <button className="btn-danger" onClick={onDelete}>
+          Delete
+        </button>
+      </div>
     </div>
   );
 };

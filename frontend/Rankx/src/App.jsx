@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ProblemList from "./pages/ProblemList";
 import ProblemDetail from "./pages/ProblemDetail";
 import Login from "./pages/Login";
@@ -13,7 +13,11 @@ import QuizAttempt from "./pages/quiz/QuizAttempt";
 import QuizResult from "./pages/quiz/QuizResult";
 import QuizHistory from "./pages/quiz/QuizHistory";
 import QuizReview from "./pages/quiz/QuizReview";
-
+import UserShell from "./components/UserShell";
+import Account from "./pages/Account";
+import Settings from "./pages/Settings";
+import Billing from "./pages/Billing";
+import Support from "./pages/Support";
 
 function App() {
   return (
@@ -22,21 +26,29 @@ function App() {
         {/* Auth Pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/problems" element={<ProblemList />} />
-        <Route path="/problems/:id" element={<ProblemDetail />} />
-        <Route path="/submissions" element={<SubmissionHistory />} />
-        <Route path="/submissions/:submissionId" element={<SubmissionDetail />} />
         <Route path="/landing" element={<LandingPage />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/" element={<Home />} />
+
+        <Route element={<UserShell />}>
+          <Route path="/home" element={<Home />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/problems" element={<ProblemList />} />
+          <Route path="/submissions" element={<SubmissionHistory />} />
+          <Route path="/submissions/:submissionId" element={<SubmissionDetail />} />
+          <Route path="/quiz" element={<QuizList />} />
+          <Route path="/quiz/history" element={<QuizHistory />} />
+          <Route path="/quiz/:quizId" element={<QuizDetails />} />
+          <Route path="/quiz/result" element={<QuizResult />} />
+          <Route path="/quiz/review/:attemptId" element={<QuizReview />} />
+          <Route path="/account" element={<Account />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/billing" element={<Billing />} />
+          <Route path="/support" element={<Support />} />
+        </Route>
+
+        <Route path="/problems/:id" element={<ProblemDetail />} />
 
         {/* Quiz Pages */}
-        <Route path="/quiz" element={<QuizList />} />
-        <Route path="/quiz/history" element={<QuizHistory />} />
-        <Route path="/quiz/:quizId" element={<QuizDetails />} />
         <Route path="/quiz/:quizId/attempt" element={<QuizAttempt />} />
-        <Route path="/quiz/result" element={<QuizResult />} />
-        <Route path="/quiz/review/:attemptId" element={<QuizReview />} />
 
         {/* Default route */}
         <Route path="*" element={<Login />} />
