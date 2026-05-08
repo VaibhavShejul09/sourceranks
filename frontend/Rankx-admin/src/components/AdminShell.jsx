@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   FaBars,
   FaChartBar,
+  FaChartLine,
   FaChevronDown,
   FaClipboardList,
   FaCog,
@@ -20,6 +21,10 @@ const navigationGroups = [
     label: "Overview",
     items: [
       { label: "Dashboard overview", to: "/admin/dashboard", icon: FaChartBar },
+      { label: "KPI dashboard", to: "/admin/analytics/kpis", icon: FaChartLine },
+      { label: "Problem analytics", to: "/admin/analytics/problems", icon: FaChartLine },
+      { label: "Quiz analytics", to: "/admin/analytics/quizzes", icon: FaChartLine },
+      { label: "Question analytics", to: "/admin/analytics/questions", icon: FaChartLine },
       { label: "Quiz management", to: "/quizzes", icon: FaClipboardList },
       { label: "Create quiz", to: "/quizzes/create", icon: FaLayerGroup },
     ],

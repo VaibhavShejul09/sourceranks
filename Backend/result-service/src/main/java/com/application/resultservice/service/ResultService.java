@@ -12,7 +12,7 @@ public interface ResultService {
 
     ResultResponse getResultByAttempt(UUID attemptId, UUID userId);
 
-    List<ResultResponse> getResultsByUser(UUID userId);
+    List<ResultResponse> getResultsByUser(UUID userId, UUID quizId, Double minimumPercentage);
 
     ResultReviewResponse getResultReview(UUID attemptId, UUID userId);
 }

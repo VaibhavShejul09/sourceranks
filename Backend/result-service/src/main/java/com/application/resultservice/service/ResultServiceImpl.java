@@ -2,8 +2,12 @@ package com.application.resultservice.service;
 
 import com.application.resultservice.client.AttemptServiceClient;
 import com.application.resultservice.client.QuestionServiceClient;
+import com.application.resultservice.client.QuizServiceClient;
+import com.application.resultservice.client.UserProgressClient;
+import com.application.resultservice.dto.ActivityProgressUpdateRequest;
 import com.application.resultservice.dto.AttemptDetails;
 import com.application.resultservice.dto.QuestionAnswerDTO;
+import com.application.resultservice.dto.QuizMetadataResponse;
 import com.application.resultservice.dto.ResultResponse;
 import com.application.resultservice.dto.ResultReviewResponse;
 import com.application.resultservice.entity.Result;
@@ -16,8 +20,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.UUID;
+import java.util.Comparator;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 
@@ -30,6 +36,8 @@ public class ResultServiceImpl implements ResultService {
     private final ResultRepository resultRepository;
     private final AttemptServiceClient attemptClient;
     private final QuestionServiceClient questionClient;
+    private final QuizServiceClient quizServiceClient;
+    private final UserProgressClient userProgressClient;
 
     @Override
     public ResultResponse evaluateAttempt(UUID attemptId, UUID userId) {
@@ -67,6 +75,7 @@ public class ResultServiceImpl implements ResultService {
                 .build();
 
         resultRepository.save(result);
+        notifyProgressUpdate(result);
         log.info("Evaluated result for attempt {} and user {}", attemptId, userId);
         return mapToResponse(result);
     }
@@ -84,9 +93,11 @@ public class ResultServiceImpl implements ResultService {
     }
 
     @Override
-    public List<ResultResponse> getResultsByUser(UUID userId) {
+    public List<ResultResponse> getResultsByUser(UUID userId, UUID quizId, Double minimumPercentage) {
         return resultRepository.findByUserId(userId)
                 .stream()
+                .filter(result -> quizId == null || quizId.equals(result.getQuizId()))
+                .filter(result -> minimumPercentage == null || (result.getPercentage() != null && result.getPercentage() >= minimumPercentage))
                 .map(this::mapToResponse)
                 .toList();
     }
@@ -102,6 +113,12 @@ public class ResultServiceImpl implements ResultService {
 
         List<QuestionAnswerDTO> correctAnswers =
                 questionClient.getCorrectAnswers(attempt.getQuizId());
+        QuizMetadataResponse quizMetadata = fetchQuizMetadata(result.getQuizId(), userId);
+        List<Result> priorResults = resultRepository.findByUserId(userId).stream()
+                .filter(existing -> existing.getQuizId().equals(result.getQuizId()))
+                .filter(existing -> !existing.getAttemptId().equals(attemptId))
+                .sorted(Comparator.comparing(Result::getEvaluatedAt))
+                .toList();
 
         Map<UUID, String> selectedAnswers = attempt.getAnswers();
         AtomicInteger questionCounter = new AtomicInteger(1);
@@ -123,13 +140,32 @@ public class ResultServiceImpl implements ResultService {
         int unansweredCount = (int) reviews.stream()
                 .filter(question -> question.selectedOption() == null)
                 .count();
+        Double previousAttemptPercentage = priorResults.isEmpty()
+                ? null
+                : priorResults.get(priorResults.size() - 1).getPercentage();
+        Double bestPreviousPercentage = priorResults.stream()
+                .map(Result::getPercentage)
+                .filter(Objects::nonNull)
+                .max(Double::compareTo)
+                .orElse(null);
+        Double percentageDelta = previousAttemptPercentage == null
+                ? null
+                : round(result.getPercentage() - previousAttemptPercentage);
 
         return ResultReviewResponse.builder()
                 .attemptId(result.getAttemptId())
                 .quizId(result.getQuizId())
+                .quizTitle(quizMetadata == null ? null : quizMetadata.getTitle())
+                .category(quizMetadata == null ? null : quizMetadata.getCategory())
+                .subCategory(quizMetadata == null ? null : quizMetadata.getSubCategory())
+                .difficulty(quizMetadata == null ? null : quizMetadata.getDifficulty())
                 .score(result.getScore())
                 .totalQuestions(result.getTotalQuestions())
                 .percentage(result.getPercentage())
+                .previousAttemptPercentage(previousAttemptPercentage)
+                .bestPreviousPercentage(bestPreviousPercentage)
+                .percentageDelta(percentageDelta)
+                .priorAttempts(priorResults.size())
                 .correctAnswers(correctCount)
                 .incorrectAnswers(reviews.size() - correctCount - unansweredCount)
                 .unansweredQuestions(unansweredCount)
@@ -145,5 +181,38 @@ public class ResultServiceImpl implements ResultService {
                 .totalQuestions(r.getTotalQuestions())
                 .percentage(r.getPercentage())
                 .build();
+    }
+
+    private void notifyProgressUpdate(Result result) {
+        try {
+            userProgressClient.updateActivityProgress(
+                    result.getUserId().toString(),
+                    "ROLE_USER",
+                    ActivityProgressUpdateRequest.builder()
+                            .itemType("QUIZ")
+                            .referenceKey("quiz-" + result.getQuizId())
+                            .sourceEventId("attempt-" + result.getAttemptId())
+                            .build()
+            );
+            log.info("Progress sync sent for evaluated attempt {} and user {}", result.getAttemptId(), result.getUserId());
+        } catch (Exception ex) {
+            log.warn("Failed to sync progress for evaluated attempt {} and user {}", result.getAttemptId(), result.getUserId(), ex);
+        }
+    }
+
+    private QuizMetadataResponse fetchQuizMetadata(UUID quizId, UUID userId) {
+        try {
+            return quizServiceClient.getQuizById(quizId, userId.toString(), "ROLE_USER");
+        } catch (Exception ex) {
+            log.warn("Failed to fetch quiz metadata for {}", quizId, ex);
+            return null;
+        }
+    }
+
+    private Double round(Double value) {
+        if (value == null) {
+            return null;
+        }
+        return Math.round(value * 100.0) / 100.0;
     }
 }

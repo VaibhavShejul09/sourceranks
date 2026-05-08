@@ -15,6 +15,10 @@ import AdminPayments from "./pages/AdminPayments";
 import AdminReports from "./pages/AdminReports";
 import AdminSupport from "./pages/AdminSupport";
 import AdminSettings from "./pages/AdminSettings";
+import AdminKpiDashboard from "./pages/AdminKpiDashboard";
+import ProblemAnalytics from "./pages/ProblemAnalytics";
+import QuizAnalytics from "./pages/QuizAnalytics";
+import QuestionAnalytics from "./pages/QuestionAnalytics";
 
 function App() {
   return (
@@ -26,6 +30,10 @@ function App() {
         <Route element={<AdminShell />}>
           <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="/admin/dashboard" element={<Dashboard />} />
+          <Route path="/admin/analytics/kpis" element={<AdminKpiDashboard />} />
+          <Route path="/admin/analytics/problems" element={<ProblemAnalytics />} />
+          <Route path="/admin/analytics/quizzes" element={<QuizAnalytics />} />
+          <Route path="/admin/analytics/questions" element={<QuestionAnalytics />} />
 
           {/* Quiz Pages */}
           <Route path="/quizzes" element={<ManageQuizzes />} />

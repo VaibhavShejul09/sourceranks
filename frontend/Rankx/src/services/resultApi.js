@@ -3,8 +3,8 @@ import axiosInstance from "./api";
 export const evaluateAttempt = (attemptId) =>
   axiosInstance.post(`/results/evaluate/${attemptId}`);
 
-export const getMyResults = () =>
-  axiosInstance.get("/results/me");
+export const getMyResults = (params = {}) =>
+  axiosInstance.get("/results/me", { params });
 
 export const getResult = (attemptId) =>
   axiosInstance.get(`/results/${attemptId}`);

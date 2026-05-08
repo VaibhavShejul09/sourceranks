@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import OnboardingCard from "../components/OnboardingCard";
 import { getMyPreferences, updateMyPreferences } from "../services/userApi";
+import { trackProductEvent } from "../utils/eventTracker";
 
 const GOALS = ["Interview Prep", "College/Exam Practice", "Skill Improvement"];
 const TRACKS = ["Coding", "Quiz", "Both"];
@@ -79,6 +80,14 @@ export default function Onboarding() {
       setSubmitting(true);
       setError("");
       await updateMyPreferences(form);
+      trackProductEvent({
+        eventName: "ONBOARDING_COMPLETED",
+        eventCategory: "ONBOARDING",
+        source: "WEB",
+        track: form.preferredTrack,
+        topic: form.goal,
+        outcome: form.skillLevel,
+      });
       navigate("/home", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "We could not save your preferences.");

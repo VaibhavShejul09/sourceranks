@@ -2,7 +2,7 @@
 
 ## Current Direction
 
-Phase 1 has been completed across the entire platform. The next direction is Phase 2 product depth and platform maturity.
+Phase 1 and Phase 2 have been completed across the platform. The next direction is Phase 3 product maturity, scalability, observability, and premium intelligence.
 
 ## Phase 1 Execution Order
 
@@ -35,9 +35,52 @@ Phase 1 has been completed across the entire platform. The next direction is Pha
 - custom input execution path
 - submission history and detail baseline
 
-## Next Recommended Work After This Pass
+## Phase 2 Change Log
 
-- Phase 2 user progress and analytics
-- richer admin tooling and validation workflows
-- broader automated test coverage beyond context verification
-- platform-wide exception contract and structured logging standardization
+### Activation and onboarding
+- onboarding and preferences support added in `user-service`
+- personalized dashboard summary added
+- goal, track, and level-based activation flow completed
+
+### Study plans and progress
+- study plan entities and APIs added
+- seeded default study plans
+- study plan enrollment and progress summary completed
+- dashboard progress widgets added
+
+### Real activity sync
+- accepted coding submissions now update study plan progress
+- completed quiz results now update study plan progress
+- percentage, next item, and locked/completed states are recalculated automatically
+
+### Analytics and recommendations
+- user analytics APIs added
+- coding and quiz performance summaries added
+- weak and strong topic detection added
+- rules-based recommendation engine v1 added
+- analytics page and dashboard recommendation cards added
+
+### History and review depth
+- coding submission history filters added
+- problem-level attempt summaries added
+- quiz history filters added
+- richer quiz review and score comparison added
+
+### Admin analytics and event tracking
+- problem, quiz, and question analytics dashboards added
+- KPI reporting APIs and admin KPI dashboard added
+- product event ingestion and frontend tracking hooks added
+
+### Stabilization and production-readiness
+- broader JUnit coverage added
+- edge-case and null-handling fixes completed
+- frontend state and routing issues cleaned up
+- affected backend and frontend verification completed
+
+## Current Recommended Next Work
+
+- Phase 3 observability and operational maturity
+- async/event-pipeline evolution for scale
+- deeper personalization and recommendation quality
+- performance optimization including frontend chunk splitting
+- richer retention and funnel analytics

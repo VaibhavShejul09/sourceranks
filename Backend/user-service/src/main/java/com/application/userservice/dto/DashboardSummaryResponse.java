@@ -16,8 +16,20 @@ public class DashboardSummaryResponse {
     private String goal;
     private String preferredTrack;
     private String skillLevel;
+    private Integer streakCount;
+    private CurrentStudyPlan currentStudyPlan;
     private RecommendedAction recommendedFirstAction;
+    private List<RecommendationCardResponse> recommendations;
     private List<ChecklistItem> checklist;
+
+    @Data
+    @Builder
+    public static class CurrentStudyPlan {
+        private Long studyPlanId;
+        private String title;
+        private Double completionPercentage;
+        private String nextItemTitle;
+    }
 
     @Data
     @Builder

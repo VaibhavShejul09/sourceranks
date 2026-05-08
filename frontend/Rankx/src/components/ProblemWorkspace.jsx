@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import api from "../services/api";
 import { AnimatePresence, motion } from "framer-motion";
+import { emitProgressUpdated } from "../utils/progressSync";
+import { trackProductEvent } from "../utils/eventTracker";
 
 const PRIMARY_TABS = ["question", "solution", "submissions", "notes"];
 const DRAWER_TABS = ["testcase", "output", "custom"];
@@ -163,6 +165,28 @@ export default function ProblemWorkspace({ problem }) {
       }\n`;
 
       setOutput(outputText);
+      trackProductEvent({
+        eventName: "CODING_SUBMISSION_RESULT",
+        eventCategory: "CODING",
+        source: "WEB",
+        track: "CODING",
+        contentType: "PROBLEM",
+        contentId: `problem-${problem.id}`,
+        contentTitle: problem.title,
+        topic: Array.isArray(problem.tags) && problem.tags.length > 0 ? problem.tags[0] : "Coding",
+        outcome: verdict,
+        metadata: {
+          languageKey,
+          submissionId,
+        },
+      });
+      if (verdict === "ACCEPTED") {
+        emitProgressUpdated({
+          source: "submission",
+          problemId: problem.id,
+          submissionId,
+        });
+      }
     } catch (err) {
       console.error(err);
       setOutput(err.response?.data?.message || "Error while submitting code");

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getSubmissionDetail } from "../services/submissionApi";
+import { getProblemAttemptSummary, getSubmissionDetail } from "../services/submissionApi";
 
 const formatTimestamp = (value) => {
   if (!value) {
@@ -19,6 +19,7 @@ export default function SubmissionDetail() {
   const navigate = useNavigate();
   const { submissionId } = useParams();
   const [submission, setSubmission] = useState(null);
+  const [problemSummary, setProblemSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -33,6 +34,13 @@ export default function SubmissionDetail() {
       try {
         const data = await getSubmissionDetail(submissionId);
         setSubmission(data);
+        setError("");
+        try {
+          const summary = await getProblemAttemptSummary(data.problemId);
+          setProblemSummary(summary);
+        } catch (summaryError) {
+          setProblemSummary(null);
+        }
       } catch (err) {
         if (err.response?.status === 401) {
           localStorage.removeItem("token");
@@ -77,7 +85,7 @@ export default function SubmissionDetail() {
           <div className="rounded-3xl border border-amber-500/40 bg-amber-500/10 p-8 text-amber-200">
             {error}
           </div>
-        ) : (
+        ) : submission ? (
           <>
             <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
               <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
@@ -114,6 +122,29 @@ export default function SubmissionDetail() {
               </div>
             </section>
 
+            {problemSummary ? (
+              <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+                  <p className="text-sm text-slate-400">Problem Attempts</p>
+                  <p className="mt-2 text-2xl font-semibold">{problemSummary.totalAttempts}</p>
+                </div>
+                <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+                  <p className="text-sm text-slate-400">Accepted Attempts</p>
+                  <p className="mt-2 text-2xl font-semibold">{problemSummary.acceptedAttempts}</p>
+                </div>
+                <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+                  <p className="text-sm text-slate-400">Best Runtime</p>
+                  <p className="mt-2 text-2xl font-semibold">
+                    {problemSummary.bestRuntimeMs != null ? `${problemSummary.bestRuntimeMs} ms` : "Pending"}
+                  </p>
+                </div>
+                <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+                  <p className="text-sm text-slate-400">Languages Used</p>
+                  <p className="mt-2 text-base font-semibold">{problemSummary.languagesUsed?.join(", ") || "N/A"}</p>
+                </div>
+              </section>
+            ) : null}
+
             <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
               <p className="text-sm uppercase tracking-[0.2em] text-slate-400">
                 Source Code
@@ -123,6 +154,10 @@ export default function SubmissionDetail() {
               </pre>
             </section>
           </>
+        ) : (
+          <div className="rounded-3xl border border-dashed border-slate-700 bg-slate-900 p-8 text-slate-400">
+            Submission details are unavailable right now.
+          </div>
         )}
       </div>
     </div>

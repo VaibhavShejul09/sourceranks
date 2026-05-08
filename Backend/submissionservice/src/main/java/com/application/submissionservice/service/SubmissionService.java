@@ -1,6 +1,7 @@
 package com.application.submissionservice.service;
 
 import com.application.submissionservice.client.ProblemServiceClient;
+import com.application.submissionservice.client.UserProgressClient;
 import com.application.submissionservice.dto.*;
 import com.application.submissionservice.entity.*;
 import com.application.submissionservice.judge.Judge0Client;
@@ -10,8 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -24,17 +28,20 @@ public class SubmissionService {
     private final ProblemServiceClient problemClient;
     private final Judge0Client judge0Client;
     private final LanguageRegistry languageRegistry;
+    private final UserProgressClient userProgressClient;
 
     public SubmissionService(
             SubmissionRepository repository,
             ProblemServiceClient problemClient,
             Judge0Client judge0Client,
-            LanguageRegistry languageRegistry
+            LanguageRegistry languageRegistry,
+            UserProgressClient userProgressClient
     ) {
         this.repository = repository;
         this.problemClient = problemClient;
         this.judge0Client = judge0Client;
         this.languageRegistry = languageRegistry;
+        this.userProgressClient = userProgressClient;
     }
 
     // ================= RUN =================
@@ -81,7 +88,7 @@ public class SubmissionService {
     }
 
     // ================= SUBMIT =================
-    public SubmitResponse submit(SubmitRequest request, Long userId) {
+    public SubmitResponse submit(SubmitRequest request, UUID userId) {
 
         validateSourceCode(request.getSourceCode());
 
@@ -148,6 +155,10 @@ public class SubmissionService {
         submission.setMemoryKb(maxMemory);
         repository.save(submission);
 
+        if (allPassed) {
+            notifyProgressUpdate(userId, request.getProblemId(), submission.getId());
+        }
+
         return SubmitResponse.builder()
                 .submissionId(submission.getId())
                 .verdict(allPassed ? "ACCEPTED" : "WRONG_ANSWER")
@@ -157,28 +168,72 @@ public class SubmissionService {
                 .build();
     }
 
-    public List<SubmissionSummaryResponse> getRecentSubmissions(Long userId) {
+    public List<SubmissionSummaryResponse> getRecentSubmissions(UUID userId) {
         return repository.findTop5ByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(this::toSummaryResponse)
                 .collect(Collectors.toList());
     }
 
-    public List<SubmissionSummaryResponse> getSubmissionHistory(Long userId) {
+    public List<SubmissionSummaryResponse> getSubmissionHistory(
+            UUID userId,
+            String status,
+            String languageKey,
+            Long problemId
+    ) {
         return repository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
+                .filter(submission -> matchesStatus(submission, status))
+                .filter(submission -> matchesLanguage(submission, languageKey))
+                .filter(submission -> matchesProblem(submission, problemId))
                 .map(this::toSummaryResponse)
                 .collect(Collectors.toList());
     }
 
-    public SubmissionDetailResponse getSubmissionDetail(Long submissionId, Long userId) {
+    public ProblemAttemptSummaryResponse getProblemAttemptSummary(UUID userId, Long problemId) {
+        List<Submission> attempts = repository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+                .filter(submission -> problemId.equals(submission.getProblemId()))
+                .toList();
+
+        if (attempts.isEmpty()) {
+            throw new IllegalArgumentException("No attempts found for the requested problem");
+        }
+
+        long acceptedAttempts = attempts.stream()
+                .filter(submission -> submission.getStatus() == SubmissionStatus.ACCEPTED)
+                .count();
+
+        Integer bestRuntime = attempts.stream()
+                .map(Submission::getRuntimeMs)
+                .filter(Objects::nonNull)
+                .min(Comparator.naturalOrder())
+                .orElse(null);
+
+        List<String> languagesUsed = attempts.stream()
+                .map(Submission::getLanguageKey)
+                .filter(Objects::nonNull)
+                .distinct()
+                .sorted()
+                .toList();
+
+        return ProblemAttemptSummaryResponse.builder()
+                .problemId(problemId)
+                .totalAttempts(attempts.size())
+                .acceptedAttempts(acceptedAttempts)
+                .latestStatus(attempts.getFirst().getStatus().name())
+                .bestRuntimeMs(bestRuntime)
+                .languagesUsed(languagesUsed)
+                .build();
+    }
+
+    public SubmissionDetailResponse getSubmissionDetail(Long submissionId, UUID userId) {
         Submission submission = repository.findByIdAndUserId(submissionId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Submission not found"));
 
         return toDetailResponse(submission);
     }
 
-    public long countSubmissions(Long userId) {
+    public long countSubmissions(UUID userId) {
         return repository.countByUserId(userId);
     }
 
@@ -243,5 +298,38 @@ public class SubmissionService {
     private Long parseTime(String time) {
         if (time == null) return null;
         return (long) (Double.parseDouble(time) * 1000);
+    }
+
+    private void notifyProgressUpdate(UUID userId, Long problemId, Long submissionId) {
+        try {
+            userProgressClient.updateActivityProgress(
+                    userId.toString(),
+                    "ROLE_USER",
+                    ActivityProgressUpdateRequest.builder()
+                            .itemType("CODING_PROBLEM")
+                            .referenceKey("problem-" + problemId)
+                            .sourceEventId("submission-" + submissionId)
+                            .build()
+            );
+            log.info("Progress sync sent for accepted submission {} and user {}", submissionId, userId);
+        } catch (Exception ex) {
+            log.warn("Failed to sync progress for accepted submission {} and user {}", submissionId, userId, ex);
+        }
+    }
+
+    private boolean matchesStatus(Submission submission, String status) {
+        return status == null
+                || status.isBlank()
+                || submission.getStatus().name().equalsIgnoreCase(status.trim());
+    }
+
+    private boolean matchesLanguage(Submission submission, String languageKey) {
+        return languageKey == null
+                || languageKey.isBlank()
+                || submission.getLanguageKey().equalsIgnoreCase(languageKey.trim());
+    }
+
+    private boolean matchesProblem(Submission submission, Long problemId) {
+        return problemId == null || problemId.equals(submission.getProblemId());
     }
 }

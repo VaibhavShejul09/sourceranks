@@ -22,6 +22,7 @@ export default function QuizReview() {
       try {
         const response = await getResultReview(attemptId);
         setReview(response.data);
+        setError("");
       } catch (err) {
         if (err.response?.status === 401) {
           localStorage.removeItem("token");
@@ -64,12 +65,12 @@ export default function QuizReview() {
           <div className="rounded-3xl border border-amber-500/40 bg-amber-500/10 p-8 text-amber-200">
             {error}
           </div>
-        ) : (
+        ) : review ? (
           <>
             <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
                 <p className="text-sm text-slate-400">Quiz</p>
-                <p className="mt-2 text-2xl font-semibold">#{review.quizId}</p>
+                <p className="mt-2 text-2xl font-semibold">{review.quizTitle || `#${review.quizId}`}</p>
               </div>
               <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
                 <p className="text-sm text-slate-400">Score</p>
@@ -86,6 +87,12 @@ export default function QuizReview() {
             </section>
 
             <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+                <p className="text-sm text-slate-400">Topic</p>
+                <p className="mt-2 text-2xl font-semibold">
+                  {review.subCategory || review.category || "Quiz Practice"}
+                </p>
+              </div>
               <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
                 <p className="text-sm text-slate-400">Correct</p>
                 <p className="mt-2 text-2xl font-semibold text-emerald-300">
@@ -106,10 +113,41 @@ export default function QuizReview() {
               </div>
             </section>
 
+            <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+                <p className="text-sm text-slate-400">Previous Attempt</p>
+                <p className="mt-2 text-2xl font-semibold">
+                  {review.previousAttemptPercentage != null
+                    ? formatPercentage(review.previousAttemptPercentage)
+                    : "First attempt"}
+                </p>
+              </div>
+              <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+                <p className="text-sm text-slate-400">Best Previous</p>
+                <p className="mt-2 text-2xl font-semibold">
+                  {review.bestPreviousPercentage != null
+                    ? formatPercentage(review.bestPreviousPercentage)
+                    : "N/A"}
+                </p>
+              </div>
+              <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+                <p className="text-sm text-slate-400">Score Delta</p>
+                <p className="mt-2 text-2xl font-semibold">
+                  {review.percentageDelta != null
+                    ? `${review.percentageDelta > 0 ? "+" : ""}${review.percentageDelta.toFixed(2)}%`
+                    : "N/A"}
+                </p>
+              </div>
+            </section>
+
             <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
               <h2 className="text-xl font-semibold">Question Review</h2>
               <div className="mt-5 space-y-3">
-                {review.questions?.map((question, index) => (
+                {(review.questions || []).length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-slate-700 px-4 py-6 text-slate-400">
+                    No question review is available for this attempt yet.
+                  </div>
+                ) : review.questions?.map((question, index) => (
                   <div
                     key={question.questionId}
                     className="rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-4"
@@ -146,6 +184,10 @@ export default function QuizReview() {
               </div>
             </section>
           </>
+        ) : (
+          <div className="rounded-3xl border border-dashed border-slate-700 bg-slate-900 p-8 text-slate-400">
+            Quiz review data is unavailable right now.
+          </div>
         )}
       </div>
     </div>

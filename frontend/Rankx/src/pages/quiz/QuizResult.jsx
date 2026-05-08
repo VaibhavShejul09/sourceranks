@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getResult } from "../../services/resultApi";
+import { emitProgressUpdated } from "../../utils/progressSync";
 
 const QuizResult = () => {
   const navigate = useNavigate();
@@ -21,6 +22,11 @@ const QuizResult = () => {
     getResult(attemptId)
       .then((res) => {
         setResult(res.data);
+        emitProgressUpdated({
+          source: "quiz-result",
+          attemptId,
+          quizId: res.data?.quizId,
+        });
         setLoading(false);
       })
       .catch(() => {
@@ -52,22 +58,14 @@ const QuizResult = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#020617] to-[#020617] text-white flex justify-center items-center px-4">
       <div className="w-full max-w-md bg-[#0f172a] rounded-3xl p-10 shadow-2xl text-center">
+        <div className="mb-4 text-6xl">{isPassed ? "Success" : "Retry"}</div>
 
-        {/* Result Emoji */}
-        <div className="text-6xl mb-4">
-          {isPassed ? "🎉" : "😕"}
-        </div>
-
-        {/* Title */}
         <h1 className="text-3xl font-bold mb-2">
           {isPassed ? "Congratulations!" : "Better Luck Next Time"}
         </h1>
 
-        <p className="text-slate-400 mb-8">
-          Here’s how you performed in this quiz
-        </p>
+        <p className="mb-8 text-slate-400">Here's how you performed in this quiz</p>
 
-        {/* Score Card */}
         <div className="bg-[#020617] rounded-2xl py-6 mb-6">
           <p className="text-slate-400 text-sm mb-1">Your Score</p>
           <p className="text-5xl font-extrabold text-indigo-400">
@@ -78,11 +76,8 @@ const QuizResult = () => {
           </p>
         </div>
 
-        {/* Percentage */}
         <div className="mb-8">
-          <p className="text-lg text-slate-300">
-            Percentage
-          </p>
+          <p className="text-lg text-slate-300">Percentage</p>
           <p
             className={`text-2xl font-semibold mt-1 ${
               isPassed ? "text-green-400" : "text-red-400"
@@ -92,7 +87,6 @@ const QuizResult = () => {
           </p>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex flex-col gap-4">
           <button
             onClick={() => navigate("/home")}
@@ -102,7 +96,7 @@ const QuizResult = () => {
           </button>
 
           <button
-            onClick={() => navigate("/quizzes")}
+            onClick={() => navigate("/quiz")}
             className="w-full py-3 rounded-xl border border-slate-600 hover:bg-slate-800 transition text-lg"
           >
             Attempt Another Quiz

@@ -4,6 +4,7 @@ import { loginApi } from "../services/authService";
 import AuthLayout from "../components/AuthLayout";
 import AuthInput from "../components/AuthInput";
 import { getRoleFromToken } from "../utils/jwtUtils";
+import { trackProductEvent } from "../utils/eventTracker";
 
 export default function Login() {
   const [form, setForm] = useState({
@@ -33,6 +34,15 @@ export default function Login() {
       localStorage.setItem("role", role);
 
       if (role === "ROLE_USER") {
+        trackProductEvent(
+          {
+            eventName: "AUTH_LOGIN_SUCCESS",
+            eventCategory: "AUTH",
+            source: "WEB",
+            track: "BOTH",
+          },
+          { dedupeKey: `login-${form.username}` }
+        );
         navigate("/home");
       } else {
         throw new Error("Unauthorized: You are not a valid user");

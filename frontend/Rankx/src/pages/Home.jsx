@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";
 import DashboardChecklist from "../components/DashboardChecklist";
 import RecommendedActionCard from "../components/RecommendedActionCard";
+import RecommendationCardsSection from "../components/RecommendationCardsSection";
 import { getMyDashboardSummary, getMyProfile } from "../services/userApi";
 import { getMyResults } from "../services/resultApi";
 import { getMyRecentSubmissions } from "../services/submissionApi";
 import { logoutUser } from "../services/authService";
+import { subscribeToProgressUpdates } from "../utils/progressSync";
 
 const practiceCards = [
   {
@@ -48,6 +50,38 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const loadDashboard = useCallback(async () => {
+    try {
+        const [profileData, summaryData, resultsResponse, submissionData] = await Promise.all([
+          getMyProfile(),
+          getMyDashboardSummary(),
+          getMyResults(),
+          getMyRecentSubmissions(),
+      ]);
+
+      if (!summaryData?.onboardingCompleted) {
+        navigate("/onboarding", { replace: true });
+        return;
+      }
+
+      setProfile(profileData);
+      setSummary(summaryData);
+      setResults(Array.isArray(resultsResponse.data) ? resultsResponse.data : []);
+      setSubmissions(Array.isArray(submissionData) ? submissionData : []);
+      setError("");
+    } catch (err) {
+      if (err.response?.status === 401) {
+        logoutUser();
+        navigate("/login");
+        return;
+      }
+
+      setError("We could not load your dashboard right now.");
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -55,39 +89,11 @@ export default function Home() {
       return;
     }
 
-    const loadDashboard = async () => {
-      try {
-        const [profileData, summaryData, resultsResponse, submissionData] = await Promise.all([
-          getMyProfile(),
-          getMyDashboardSummary(),
-          getMyResults(),
-          getMyRecentSubmissions(),
-        ]);
-
-        if (!summaryData?.onboardingCompleted) {
-          navigate("/onboarding", { replace: true });
-          return;
-        }
-
-        setProfile(profileData);
-        setSummary(summaryData);
-        setResults(Array.isArray(resultsResponse.data) ? resultsResponse.data : []);
-        setSubmissions(Array.isArray(submissionData) ? submissionData : []);
-      } catch (err) {
-        if (err.response?.status === 401) {
-          logoutUser();
-          navigate("/login");
-          return;
-        }
-
-        setError("We could not load your dashboard right now.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadDashboard();
-  }, [navigate]);
+    return subscribeToProgressUpdates(() => {
+      loadDashboard();
+    });
+  }, [loadDashboard, navigate]);
 
   if (loading) {
     return (
@@ -102,7 +108,7 @@ export default function Home() {
     "solve-first-problem": submissions.length > 0,
     "attempt-first-quiz": results.length > 0,
     "review-first-result": results.length > 0,
-    "join-study-path": Boolean(summary?.preferredTrack),
+    "join-study-path": Boolean(summary?.currentStudyPlan?.studyPlanId),
   };
 
   return (
@@ -194,21 +200,51 @@ export default function Home() {
       </div>
 
       <RecommendedActionCard action={summary?.recommendedFirstAction} />
+      <RecommendationCardsSection recommendations={summary?.recommendations || []} />
+
+      <section className="grid gap-4 md:grid-cols-4">
+        <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+          <p className="text-sm text-slate-400">Current Plan</p>
+          <p className="mt-2 text-xl font-semibold text-white">
+            {summary?.currentStudyPlan?.title || "No active plan"}
+          </p>
+        </div>
+        <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+          <p className="text-sm text-slate-400">Next Item</p>
+          <p className="mt-2 text-xl font-semibold text-white">
+            {summary?.currentStudyPlan?.nextItemTitle || "Choose a study plan"}
+          </p>
+        </div>
+        <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+          <p className="text-sm text-slate-400">Completion</p>
+          <p className="mt-2 text-xl font-semibold text-white">
+            {summary?.currentStudyPlan?.completionPercentage != null
+              ? `${Number(summary.currentStudyPlan.completionPercentage).toFixed(0)}%`
+              : "0%"}
+          </p>
+        </div>
+        <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+          <p className="text-sm text-slate-400">Streak Count</p>
+          <p className="mt-2 text-xl font-semibold text-white">
+            {summary?.streakCount ?? 0}
+          </p>
+        </div>
+      </section>
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
-            <p className="text-sm text-slate-400">Role</p>
-            <p className="mt-2 text-2xl font-semibold">
-              {(profile?.role || "ROLE_USER").replace("ROLE_", "")}
-            </p>
+          <p className="text-sm text-slate-400">Role</p>
+          <p className="mt-2 text-2xl font-semibold">
+            {(profile?.role || "ROLE_USER").replace("ROLE_", "")}
+          </p>
         </div>
         <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
-            <p className="text-sm text-slate-400">Quiz Results</p>
-            <p className="mt-2 text-2xl font-semibold">{results.length}</p>
+          <p className="text-sm text-slate-400">Quiz Results</p>
+          <p className="mt-2 text-2xl font-semibold">{results.length}</p>
         </div>
         <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
-            <p className="text-sm text-slate-400">Recent Submissions</p>
-            <p className="mt-2 text-2xl font-semibold">{submissions.length}</p>
+          <p className="text-sm text-slate-400">Recent Submissions</p>
+          <p className="mt-2 text-2xl font-semibold">{submissions.length}</p>
         </div>
       </section>
 
@@ -253,7 +289,7 @@ export default function Home() {
                 <div
                   key={result.attemptId}
                   onClick={() => navigate(`/quiz/review/${result.attemptId}`)}
-                  className="rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-4"
+                  className="cursor-pointer rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-4 transition hover:bg-slate-900"
                 >
                   <div className="flex items-center justify-between gap-4">
                     <div>
@@ -296,7 +332,8 @@ export default function Home() {
               submissions.map((submission) => (
                 <div
                   key={submission.id}
-                  className="rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-4"
+                  onClick={() => navigate(`/submissions/${submission.id}`)}
+                  className="cursor-pointer rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-4 transition hover:bg-slate-900"
                 >
                   <div className="flex items-center justify-between gap-4">
                     <div>
@@ -329,6 +366,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-      </div>
+    </div>
   );
 }

@@ -1,8 +1,15 @@
 package com.application.userservice;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@AutoConfigureMockMvc
 @SpringBootTest(properties = {
 		"spring.cloud.config.enabled=false",
 		"spring.cloud.discovery.enabled=false",
@@ -16,7 +23,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 })
 class UserServiceApplicationTests {
 
+	@Autowired
+	private MockMvc mockMvc;
+
 	@Test
 	void contextLoads() {
+	}
+
+	@Test
+	void adminAnalyticsEndpointExists() throws Exception {
+		mockMvc.perform(get("/api/users/admin/analytics/kpis"))
+				.andExpect(status().is4xxClientError());
 	}
 }

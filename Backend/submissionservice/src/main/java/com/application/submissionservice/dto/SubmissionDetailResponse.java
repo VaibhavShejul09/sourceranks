@@ -4,11 +4,12 @@ import com.application.submissionservice.entity.SubmissionStatus;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Builder
 public record SubmissionDetailResponse(
         Long id,
-        Long userId,
+        UUID userId,
         Long problemId,
         String languageKey,
         String sourceCode,

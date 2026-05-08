@@ -19,3 +19,38 @@ export const getMyDashboardSummary = async () => {
   const response = await api.get("/users/me/dashboard-summary");
   return extractApiData(response);
 };
+
+export const getMyAnalytics = async () => {
+  const response = await api.get("/users/me/analytics");
+  return extractApiData(response);
+};
+
+export const getStudyPlans = async () => {
+  const response = await api.get("/users/study-plans");
+  return extractApiData(response);
+};
+
+export const getStudyPlanDetail = async (studyPlanId) => {
+  const response = await api.get(`/users/study-plans/${studyPlanId}`);
+  return extractApiData(response);
+};
+
+export const enrollInStudyPlan = async (studyPlanId) => {
+  const response = await api.post(`/users/study-plans/${studyPlanId}/enroll`);
+  return extractApiData(response);
+};
+
+export const getMyStudyPlans = async () => {
+  const response = await api.get("/users/me/study-plans");
+  return extractApiData(response);
+};
+
+export const getStudyPlanProgress = async (studyPlanId) => {
+  const response = await api.get(`/users/me/study-plans/${studyPlanId}/progress`);
+  return extractApiData(response);
+};
+
+export const getMyProgressSummary = async () => {
+  const response = await api.get("/users/me/progress-summary");
+  return extractApiData(response);
+};

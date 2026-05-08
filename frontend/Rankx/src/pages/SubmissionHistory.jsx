@@ -18,6 +18,11 @@ const formatTimestamp = (value) => {
 export default function SubmissionHistory() {
   const navigate = useNavigate();
   const [submissions, setSubmissions] = useState([]);
+  const [filters, setFilters] = useState({
+    status: "",
+    languageKey: "",
+    problemId: "",
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -30,8 +35,16 @@ export default function SubmissionHistory() {
 
     const loadSubmissions = async () => {
       try {
-        const data = await getMyRecentSubmissions();
+        setLoading(true);
+        const data = await getMyRecentSubmissions({
+          status: filters.status || undefined,
+          languageKey: filters.languageKey || undefined,
+          problemId: filters.problemId && !Number.isNaN(Number(filters.problemId))
+            ? Number(filters.problemId)
+            : undefined,
+        });
         setSubmissions(Array.isArray(data) ? data : []);
+        setError("");
       } catch (err) {
         if (err.response?.status === 401) {
           localStorage.removeItem("token");
@@ -46,7 +59,15 @@ export default function SubmissionHistory() {
     };
 
     loadSubmissions();
-  }, [navigate]);
+  }, [filters, navigate]);
+
+  const handleFilterChange = (event) => {
+    const { name, value } = event.target;
+    setFilters((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 px-6 py-8 text-slate-100 md:px-10">
@@ -67,6 +88,45 @@ export default function SubmissionHistory() {
           >
             Back to Dashboard
           </button>
+        </div>
+
+        <div className="mb-6 grid gap-4 rounded-3xl border border-slate-800 bg-slate-900 p-5 md:grid-cols-3">
+          <label className="text-sm text-slate-300">
+            <span className="mb-2 block text-slate-400">Status</span>
+            <select
+              name="status"
+              value={filters.status}
+              onChange={handleFilterChange}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100"
+            >
+              <option value="">All statuses</option>
+              <option value="ACCEPTED">Accepted</option>
+              <option value="WRONG_ANSWER">Wrong Answer</option>
+              <option value="RUNTIME_ERROR">Runtime Error</option>
+              <option value="COMPILATION_ERROR">Compilation Error</option>
+            </select>
+          </label>
+          <label className="text-sm text-slate-300">
+            <span className="mb-2 block text-slate-400">Language</span>
+            <input
+              name="languageKey"
+              value={filters.languageKey}
+              onChange={handleFilterChange}
+              placeholder="java, python..."
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100"
+            />
+          </label>
+          <label className="text-sm text-slate-300">
+            <span className="mb-2 block text-slate-400">Problem ID</span>
+            <input
+              name="problemId"
+              value={filters.problemId}
+              onChange={handleFilterChange}
+              inputMode="numeric"
+              placeholder="101"
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100"
+            />
+          </label>
         </div>
 
         {loading ? (
@@ -105,7 +165,7 @@ export default function SubmissionHistory() {
                     <td className="px-6 py-4">#{submission.problemId}</td>
                     <td className="px-6 py-4">{submission.languageKey}</td>
                     <td className="px-6 py-4">
-                      <span className="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold">
+                      <span className="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em]">
                         {submission.status}
                       </span>
                     </td>

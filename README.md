@@ -1,24 +1,28 @@
 # RankX
 
-RankX is a dual-track learning platform built around two product experiences:
+RankX is a dual-track learning platform built around two connected product experiences:
 
-- Coding practice and evaluation
-- Quiz authoring, attempts, and results
+- coding practice, submissions, and study progression
+- quiz authoring, attempts, results, and review
 
-This repository is being brought to a production-grade Phase 1 baseline with a gateway-first architecture, role-aware user and admin flows, safer service boundaries, and structured platform documentation.
+The platform now has a completed `Phase 1` production MVP baseline and a completed `Phase 2` premium product baseline, including onboarding, study plans, progress tracking, analytics, recommendations, history improvements, admin analytics, and event tracking.
 
 ## Product Tracks
 
 ### Coding platform
 - browse problems
-- run code
-- submit code
+- run code with sample or custom input
+- submit code and review results
+- track progress through study plans
+- review submission history and attempt summaries
 - manage problems, languages, templates, and testcases
 
 ### Quiz platform
 - browse quizzes
 - attempt quizzes
-- submit answers and view results
+- review results with richer feedback
+- track progress through study plans
+- review quiz history and score changes
 - manage quizzes and questions
 
 ## Service Map
@@ -37,25 +41,32 @@ This repository is being brought to a production-grade Phase 1 baseline with a g
 - `result-service`
 
 ### Frontend applications
-- `frontend/Rankx`
-- `frontend/Rankx-admin`
+- `Frontend/Rankx`
+- `Frontend/Rankx-admin`
 
 ## Current Phase Status
 
 - Phase 1: completed
-- Coding platform: Phase 1 complete
-- Quiz platform: Phase 1 complete and aligned with the coding platform baseline
-- Platform security baseline: Phase 1 complete
-- Documentation baseline: complete
+- Phase 2: completed
+- Coding platform: Phase 2 complete
+- Quiz platform: Phase 2 complete and aligned with the coding platform
+- Admin analytics baseline: complete
+- Event tracking baseline: complete
 
-## Phase 1 Goals
+## Phase 2 Outcomes
 
-- secure gateway-to-service identity flow
-- correct ownership enforcement
-- stable coding and quiz user flows
-- stable admin content management flows
-- structured logging and exception handling baseline
-- clean system documentation
+Phase 2 added the product depth that Phase 1 intentionally deferred:
+
+- onboarding and user preferences
+- personalized dashboard summaries
+- study plans and enrollment
+- user progress tracking
+- real progress sync from coding and quiz activity
+- analytics and recommendation engine v1
+- richer coding and quiz history
+- admin content analytics and KPI dashboards
+- event ingestion for activation and engagement reporting
+- deeper test coverage and Phase 2 stabilization
 
 ## Documentation Map
 
@@ -66,25 +77,20 @@ This repository is being brought to a production-grade Phase 1 baseline with a g
 - [Docs/PHASES.md](E:/Workspace/RankX/Docs/PHASES.md)
 - [Docs/ROADMAP.md](E:/Workspace/RankX/Docs/ROADMAP.md)
 - [Docs/REPOSITORY_STRUCTURE.md](E:/Workspace/RankX/Docs/REPOSITORY_STRUCTURE.md)
+- [Docs/PHASE_2_COMPLETION.md](E:/Workspace/RankX/Docs/PHASE_2_COMPLETION.md)
 
 ## Current Repository Note
 
-The canonical backend service source now lives at the repository root, one folder per service. Legacy naming still exists for `problemservice` and `submissionservice`; those names should be normalized only through a separate explicit repository migration.
+The canonical backend service source is under `Backend/`, with frontend applications under `Frontend/`. Legacy service names still exist for `problemservice` and `submissionservice`; those names should only be normalized through a separate explicit repository migration.
 
-## Verification Baseline
+## Verification Snapshot
 
-Phase 1 verification completed with:
+Phase 2 verification completed with:
 
-- `mvn test` for `api-gateway`
-- `mvn test` for `auth-service`
 - `mvn test` for `user-service`
-- `mvn test` for `attempt-service`
-- `mvn test` for `result-service`
-- `mvn test` for `problemservice`
 - `mvn test` for `submissionservice`
-- `mvn test` for `quiz-service`
-- `mvn test` for `question-service`
-- `mvn test` for `config-server`
-- `mvn test` for `discovery-server`
+- `mvn test` for `result-service`
 - `npm run build` for `Frontend/Rankx`
 - `npm run build` for `Frontend/Rankx-admin`
+
+Phase 1 verification was also completed earlier across the full platform baseline.

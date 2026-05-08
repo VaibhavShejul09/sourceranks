@@ -1,9 +1,20 @@
 package com.application.userservice.controller;
 
 import com.application.userservice.dto.DashboardSummaryResponse;
+import com.application.userservice.dto.ProductEventRequest;
+import com.application.userservice.dto.ProductEventResponse;
+import com.application.userservice.dto.ProgressSummaryResponse;
+import com.application.userservice.dto.StudyPlanDetailResponse;
+import com.application.userservice.dto.StudyPlanProgressResponse;
+import com.application.userservice.dto.StudyPlanResponse;
+import com.application.userservice.dto.UserAnalyticsResponse;
 import com.application.userservice.dto.UserPreferenceRequest;
 import com.application.userservice.dto.UserPreferenceResponse;
 import com.application.userservice.dto.UserProfileResponse;
+import com.application.userservice.dto.UserStudyPlanResponse;
+import com.application.userservice.service.StudyPlanService;
+import com.application.userservice.service.ProductEventService;
+import com.application.userservice.service.UserAnalyticsService;
 import com.application.userservice.service.UserPreferenceService;
 import com.application.userservice.service.UserProfileService;
 import jakarta.validation.Valid;
@@ -11,11 +22,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -24,13 +38,22 @@ public class UserController {
 
     private final UserProfileService userProfileService;
     private final UserPreferenceService userPreferenceService;
+    private final StudyPlanService studyPlanService;
+    private final UserAnalyticsService userAnalyticsService;
+    private final ProductEventService productEventService;
 
     public UserController(
             UserProfileService userProfileService,
-            UserPreferenceService userPreferenceService
+            UserPreferenceService userPreferenceService,
+            StudyPlanService studyPlanService,
+            UserAnalyticsService userAnalyticsService,
+            ProductEventService productEventService
     ) {
         this.userProfileService = userProfileService;
         this.userPreferenceService = userPreferenceService;
+        this.studyPlanService = studyPlanService;
+        this.userAnalyticsService = userAnalyticsService;
+        this.productEventService = productEventService;
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
@@ -64,6 +87,73 @@ public class UserController {
                 getUserId(authentication),
                 getRole(authentication)
         ));
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @GetMapping("/me/analytics")
+    public ResponseEntity<UserAnalyticsResponse> getMyAnalytics(Authentication authentication) {
+        return ResponseEntity.ok(userAnalyticsService.getAnalytics(
+                getUserId(authentication),
+                getRole(authentication)
+        ));
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PostMapping("/events")
+    public ResponseEntity<ProductEventResponse> ingestEvent(
+            Authentication authentication,
+            @Valid @RequestBody ProductEventRequest request
+    ) {
+        return ResponseEntity.ok(productEventService.ingest(
+                getUserId(authentication),
+                getRole(authentication),
+                request
+        ));
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @GetMapping("/study-plans")
+    public ResponseEntity<List<StudyPlanResponse>> getStudyPlans(Authentication authentication) {
+        return ResponseEntity.ok(studyPlanService.getStudyPlans(getUserId(authentication)));
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @GetMapping("/study-plans/{id}")
+    public ResponseEntity<StudyPlanDetailResponse> getStudyPlanDetail(
+            Authentication authentication,
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(studyPlanService.getStudyPlanDetail(getUserId(authentication), id));
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PostMapping("/study-plans/{id}/enroll")
+    public ResponseEntity<UserStudyPlanResponse> enrollInStudyPlan(
+            Authentication authentication,
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(studyPlanService.enroll(getUserId(authentication), id));
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @GetMapping("/me/study-plans")
+    public ResponseEntity<List<UserStudyPlanResponse>> getMyStudyPlans(Authentication authentication) {
+        return ResponseEntity.ok(studyPlanService.getUserStudyPlans(getUserId(authentication)));
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @GetMapping("/me/study-plans/{id}/progress")
+    public ResponseEntity<StudyPlanProgressResponse> getMyStudyPlanProgress(
+            Authentication authentication,
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(studyPlanService.getStudyPlanProgress(getUserId(authentication), id));
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @GetMapping("/me/progress-summary")
+    public ResponseEntity<ProgressSummaryResponse> getMyProgressSummary(Authentication authentication) {
+        return ResponseEntity.ok(studyPlanService.getProgressSummary(getUserId(authentication)));
     }
 
     private UUID getUserId(Authentication authentication) {

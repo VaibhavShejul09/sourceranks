@@ -1,8 +1,14 @@
 package com.application.userservice.controller;
 
 import com.application.userservice.dto.DashboardSummaryResponse;
+import com.application.userservice.dto.ProductEventResponse;
+import com.application.userservice.dto.RecommendationCardResponse;
+import com.application.userservice.dto.UserAnalyticsResponse;
 import com.application.userservice.dto.UserPreferenceResponse;
 import com.application.userservice.dto.UserProfileResponse;
+import com.application.userservice.service.UserAnalyticsService;
+import com.application.userservice.service.ProductEventService;
+import com.application.userservice.service.StudyPlanService;
 import com.application.userservice.service.UserPreferenceService;
 import com.application.userservice.service.UserProfileService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,6 +50,15 @@ class UserControllerTest {
 
     @MockBean
     private UserPreferenceService userPreferenceService;
+
+    @MockBean
+    private StudyPlanService studyPlanService;
+
+    @MockBean
+    private UserAnalyticsService userAnalyticsService;
+
+    @MockBean
+    private ProductEventService productEventService;
 
     private Authentication authentication() {
         return new UsernamePasswordAuthenticationToken(
@@ -142,6 +157,15 @@ class UserControllerTest {
                         .goal("Interview Prep")
                         .preferredTrack("Coding")
                         .skillLevel("Intermediate")
+                        .recommendations(List.of(
+                                RecommendationCardResponse.builder()
+                                        .title("Strengthen Arrays")
+                                        .description("Review a weaker coding topic.")
+                                        .route("/problems")
+                                        .reason("Weak coding topic")
+                                        .priority("MEDIUM")
+                                        .build()
+                        ))
                         .recommendedFirstAction(DashboardSummaryResponse.RecommendedAction.builder()
                                 .title("Solve your first coding problem")
                                 .description("Start coding practice aligned to your current goal and level.")
@@ -154,5 +178,65 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.recommendedFirstAction.route").value("/problems"))
                 .andExpect(jsonPath("$.preferredTrack").value("Coding"));
+    }
+
+    @Test
+    void shouldGetAnalytics() throws Exception {
+        when(userAnalyticsService.getAnalytics(eq(USER_ID), eq("ROLE_USER")))
+                .thenReturn(UserAnalyticsResponse.builder()
+                        .recommendations(List.of(
+                                RecommendationCardResponse.builder()
+                                        .title("Join a study plan")
+                                        .route("/study-plans")
+                                        .build()
+                        ))
+                        .build());
+
+        mockMvc.perform(get("/api/users/me/analytics").principal(authentication()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.recommendations[0].route").value("/study-plans"));
+    }
+
+    @Test
+    void shouldIngestProductEvent() throws Exception {
+        when(productEventService.ingest(eq(USER_ID), eq("ROLE_USER"), any()))
+                .thenReturn(ProductEventResponse.builder()
+                        .id(99L)
+                        .eventName("AUTH_LOGIN_SUCCESS")
+                        .eventCategory("AUTH")
+                        .accepted(true)
+                        .build());
+
+        String payload = """
+                {
+                  "eventName": "auth.login_success",
+                  "eventCategory": "AUTH",
+                  "source": "WEB"
+                }
+                """;
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/users/events")
+                        .principal(authentication())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accepted").value(true))
+                .andExpect(jsonPath("$.eventName").value("AUTH_LOGIN_SUCCESS"));
+    }
+
+    @Test
+    void shouldRejectInvalidEventPayload() throws Exception {
+        String payload = """
+                {
+                  "eventName": "",
+                  "eventCategory": ""
+                }
+                """;
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/users/events")
+                        .principal(authentication())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isBadRequest());
     }
 }

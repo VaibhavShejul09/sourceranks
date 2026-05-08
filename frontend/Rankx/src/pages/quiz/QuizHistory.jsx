@@ -7,6 +7,10 @@ const formatPercentage = (value) => `${Number(value || 0).toFixed(2)}%`;
 export default function QuizHistory() {
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
+  const [filters, setFilters] = useState({
+    quizId: "",
+    minimumPercentage: "",
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -19,8 +23,16 @@ export default function QuizHistory() {
 
     const loadResults = async () => {
       try {
-        const response = await getMyResults();
+        setLoading(true);
+        const response = await getMyResults({
+          quizId: filters.quizId || undefined,
+          minimumPercentage:
+            filters.minimumPercentage !== "" && !Number.isNaN(Number(filters.minimumPercentage))
+              ? Number(filters.minimumPercentage)
+              : undefined,
+        });
         setResults(Array.isArray(response.data) ? response.data : []);
+        setError("");
       } catch (err) {
         if (err.response?.status === 401) {
           localStorage.removeItem("token");
@@ -35,7 +47,15 @@ export default function QuizHistory() {
     };
 
     loadResults();
-  }, [navigate]);
+  }, [filters, navigate]);
+
+  const handleFilterChange = (event) => {
+    const { name, value } = event.target;
+    setFilters((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 px-6 py-8 text-slate-100 md:px-10">
@@ -56,6 +76,30 @@ export default function QuizHistory() {
           >
             Back to Dashboard
           </button>
+        </div>
+
+        <div className="mb-6 grid gap-4 rounded-3xl border border-slate-800 bg-slate-900 p-5 md:grid-cols-2">
+          <label className="text-sm text-slate-300">
+            <span className="mb-2 block text-slate-400">Quiz ID</span>
+            <input
+              name="quizId"
+              value={filters.quizId}
+              onChange={handleFilterChange}
+              placeholder="Quiz UUID"
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100"
+            />
+          </label>
+          <label className="text-sm text-slate-300">
+            <span className="mb-2 block text-slate-400">Minimum score %</span>
+            <input
+              name="minimumPercentage"
+              value={filters.minimumPercentage}
+              onChange={handleFilterChange}
+              inputMode="decimal"
+              placeholder="60"
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100"
+            />
+          </label>
         </div>
 
         {loading ? (

@@ -10,9 +10,17 @@ import java.util.UUID;
 public class UserProfileService {
 
     private final UserPreferenceService userPreferenceService;
+    private final StudyPlanService studyPlanService;
+    private final UserAnalyticsService userAnalyticsService;
 
-    public UserProfileService(UserPreferenceService userPreferenceService) {
+    public UserProfileService(
+            UserPreferenceService userPreferenceService,
+            StudyPlanService studyPlanService,
+            UserAnalyticsService userAnalyticsService
+    ) {
         this.userPreferenceService = userPreferenceService;
+        this.studyPlanService = studyPlanService;
+        this.userAnalyticsService = userAnalyticsService;
     }
 
     public UserProfileResponse getProfile(UUID userId, String role) {
@@ -25,7 +33,21 @@ public class UserProfileService {
     }
 
     public DashboardSummaryResponse getDashboardSummary(UUID userId, String role) {
-        return userPreferenceService.getDashboardSummary(userId, role, buildDisplayName(userId));
+        DashboardSummaryResponse summary = userPreferenceService.getDashboardSummary(userId, role, buildDisplayName(userId));
+        var progressSummary = studyPlanService.getProgressSummary(userId);
+
+        summary.setStreakCount(progressSummary.getStreakCount());
+        summary.setRecommendations(userAnalyticsService.getDashboardRecommendations(userId, role));
+        if (progressSummary.getCurrentPlan() != null) {
+            summary.setCurrentStudyPlan(DashboardSummaryResponse.CurrentStudyPlan.builder()
+                    .studyPlanId(progressSummary.getCurrentPlan().getStudyPlanId())
+                    .title(progressSummary.getCurrentPlan().getTitle())
+                    .completionPercentage(progressSummary.getCurrentPlan().getCompletionPercentage())
+                    .nextItemTitle(progressSummary.getCurrentPlan().getNextItemTitle())
+                    .build());
+        }
+
+        return summary;
     }
 
     private String buildDisplayName(UUID userId) {

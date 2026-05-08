@@ -5,6 +5,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.application.submissionservice.client.ProblemServiceClient;
+import com.application.submissionservice.client.UserProgressClient;
 import com.application.submissionservice.judge.Judge0Client;
 
 @SpringBootTest(properties = {
@@ -26,6 +27,9 @@ class SubmissionServiceApplicationTests {
 
 	@MockBean
 	private Judge0Client judge0Client;
+
+	@MockBean
+	private UserProgressClient userProgressClient;
 
 	@Test
 	void contextLoads() {

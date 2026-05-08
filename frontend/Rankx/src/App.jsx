@@ -5,7 +5,11 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import LandingPage from "./pages/LandingPage";
 import Home from "./pages/Home";
+import Analytics from "./pages/Analytics";
 import Onboarding from "./pages/Onboarding";
+import StudyPlans from "./pages/StudyPlans";
+import StudyPlanDetail from "./pages/StudyPlanDetail";
+import MyProgress from "./pages/MyProgress";
 import SubmissionHistory from "./pages/SubmissionHistory";
 import SubmissionDetail from "./pages/SubmissionDetail";
 import QuizList from "./pages/quiz/QuizList";
@@ -31,8 +35,12 @@ function App() {
 
         <Route element={<UserShell />}>
           <Route path="/home" element={<Home />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/study-plans" element={<StudyPlans />} />
+          <Route path="/study-plans/:id" element={<StudyPlanDetail />} />
+          <Route path="/my-progress" element={<MyProgress />} />
           <Route path="/problems" element={<ProblemList />} />
           <Route path="/submissions" element={<SubmissionHistory />} />
           <Route path="/submissions/:submissionId" element={<SubmissionDetail />} />

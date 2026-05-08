@@ -6,6 +6,7 @@ import {
   saveAnswer,
   submitAttempt
 } from "../../services/attemptApi";
+import { trackProductEvent } from "../../utils/eventTracker";
 
 /* ---------- Utils ---------- */
 const shuffleArray = (arr) => {
@@ -57,6 +58,18 @@ const QuizAttempt = () => {
       try {
         const attemptRes = await startAttempt(quizId);
         setAttemptId(attemptRes.data);
+        trackProductEvent(
+          {
+            eventName: "QUIZ_ATTEMPT_STARTED",
+            eventCategory: "QUIZ",
+            source: "WEB",
+            track: "QUIZ",
+            contentType: "QUIZ",
+            contentId: `quiz-${quizId}`,
+            contentTitle: `Quiz ${quizId}`,
+          },
+          { dedupeKey: `quiz-start-${quizId}` }
+        );
 
         const questionRes = await getQuestionsByQuiz(quizId);
         const normalized = questionRes.data.map(q => ({
@@ -130,6 +143,21 @@ const QuizAttempt = () => {
         questionId: question.id,
         selectedOption: option.key
       });
+      trackProductEvent({
+        eventName: "QUIZ_QUESTION_ANSWERED",
+        eventCategory: "QUIZ",
+        source: "WEB",
+        track: "QUIZ",
+        contentType: "QUESTION",
+        contentId: `question-${question.id}`,
+        contentTitle: question.questionText,
+        parentContentId: `quiz-${quizId}`,
+        topic: `Question ${current + 1}`,
+        outcome: "ANSWERED",
+        metadata: {
+          selectedOption: option.key,
+        },
+      });
     } catch (err) {
       console.error("Save answer failed", err);
       setError("We could not save your answer. Please try again.");
@@ -150,6 +178,21 @@ const QuizAttempt = () => {
     try {
       setSubmitting(true);
       await submitAttempt(attemptId);
+      trackProductEvent({
+        eventName: "QUIZ_ATTEMPT_SUBMITTED",
+        eventCategory: "QUIZ",
+        source: "WEB",
+        track: "QUIZ",
+        contentType: "QUIZ",
+        contentId: `quiz-${quizId}`,
+        contentTitle: `Quiz ${quizId}`,
+        outcome: "SUBMITTED",
+        numericValue: questions.length - unansweredCount,
+        metadata: {
+          unansweredCount,
+          totalQuestions: questions.length,
+        },
+      });
       navigate(`/quiz/result?attemptId=${attemptId}`);
     } catch (err) {
       console.error("Failed to submit quiz", err);

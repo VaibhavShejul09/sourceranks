@@ -5,6 +5,9 @@ import { logoutUser } from "../services/authService";
 
 const primaryNav = [
   { label: "Dashboard", to: "/home", badge: "DB" },
+  { label: "Analytics", to: "/analytics", badge: "AN" },
+  { label: "Study Plans", to: "/study-plans", badge: "SP" },
+  { label: "My Progress", to: "/my-progress", badge: "PG" },
   { label: "Coding Practice", to: "/problems", badge: "CP" },
   { label: "Quiz Center", to: "/quiz", badge: "QZ" },
   { label: "Submissions", to: "/submissions", badge: "SB" },

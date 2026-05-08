@@ -55,9 +55,11 @@ public class ResultController {
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/me")
     public ResponseEntity<List<ResultResponse>> getMyResults(
+            @RequestParam(required = false) UUID quizId,
+            @RequestParam(required = false) Double minimumPercentage,
             Authentication authentication
     ) {
         UUID userId = (UUID) authentication.getPrincipal();
-        return ResponseEntity.ok(resultService.getResultsByUser(userId));
+        return ResponseEntity.ok(resultService.getResultsByUser(userId, quizId, minimumPercentage));
     }
 }
