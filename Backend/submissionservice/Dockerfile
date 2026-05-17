@@ -55,7 +55,7 @@ FROM gcr.io/distroless/java21-debian12:nonroot
 LABEL org.opencontainers.image.title="springboot-service" \
       org.opencontainers.image.description="Production Spring Boot Application" \
       org.opencontainers.image.version="1.0.0" \
-      org.opencontainers.image.vendor="RankX" \
+      org.opencontainers.image.vendor="RankX" 
 
 ############################################################
 # Application Working Directory
